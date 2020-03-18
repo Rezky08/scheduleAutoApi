@@ -53,7 +53,7 @@ class ProgramStudiController extends Controller
         $rules = [
             'kode_prodi' => ['required', 'unique:program_studi,kode_prodi', 'max:10'],
             'nama_prodi' => ['required'],
-            'keterangan_prodi' => ['required']
+            'keterangan_prodi' => ['sometimes', 'required'],
         ];
         // rules nya cek di web laravel aja
 
