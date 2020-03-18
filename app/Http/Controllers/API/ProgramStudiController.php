@@ -52,7 +52,8 @@ class ProgramStudiController extends Controller
         // ngecek ada inputan yang nama nya kode_prodi sama nama_prodi dengan rules begitu
         $rules = [
             'kode_prodi' => ['required', 'unique:program_studi,kode_prodi', 'max:10'],
-            'nama_prodi' => ['required']
+            'nama_prodi' => ['required'],
+            'keterangan_prodi' => ['required']
         ];
         // rules nya cek di web laravel aja
 
@@ -69,6 +70,7 @@ class ProgramStudiController extends Controller
         $insertToDB = [
             'kode_prodi' => $request->kode_prodi,
             'nama_prodi' => $request->nama_prodi,
+            'keterangan_prodi' => $request->keterangan_prodi,
             'created_at' => now(),
             'updated_at' => now()
         ];
