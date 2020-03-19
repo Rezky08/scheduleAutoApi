@@ -51,7 +51,7 @@ class ProgramStudiController extends Controller
         // validasi inputan
         // ngecek ada inputan yang nama nya kode_prodi sama nama_prodi dengan rules begitu
         $rules = [
-            'kode_prodi' => ['required', 'unique:program_studi,kode_prodi', 'max:10'],
+            'kode_prodi' => ['required', 'unique:program_studi,kode_prodi,NULL,id,deleted_at,NULL', 'max:10'],
             'nama_prodi' => ['required'],
             'keterangan_prodi' => ['sometimes', 'required'],
         ];
