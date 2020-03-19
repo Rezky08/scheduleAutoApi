@@ -91,7 +91,7 @@ class JamController extends Controller
     {
 
         $rules = [
-            'id' => ['required', 'exists:jam,id']
+            'id' => ['required', 'exists:jam,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
@@ -123,7 +123,7 @@ class JamController extends Controller
     public function update(Request $request)
     {
         $rules = [
-            'id' => ['required', 'exists:jam,id'],
+            'id' => ['required', 'exists:jam,id,deleted_at,NULL'],
             'jam_mulai' => ['required', 'date_format:H:i:s'],
             'jam_selesai' => ['required', 'date_format:H:i:s'],
         ];
@@ -184,7 +184,7 @@ class JamController extends Controller
             'id' => $request->id
         ];
         $rules = [
-            'id' => ['required', 'exists:jam,id']
+            'id' => ['required', 'exists:jam,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
