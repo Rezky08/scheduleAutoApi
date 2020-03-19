@@ -132,7 +132,7 @@ class MatakuliahController extends Controller
 
         $rules = [
             'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL'],
-            'kode_matkul_new' => ['sometimes', 'required', 'different:kode_matkul', 'unique:mata_kuliah,kode_matkul,' . $request->kode_matkul_new . ',id,deleted_at,NULL', 'max:10'],
+            'kode_matkul_new' => ['sometimes', 'required', 'different:kode_matkul', 'unique:mata_kuliah,kode_matkul,' . $request->kode_matkul_new . ',kode_matkul,deleted_at,NULL', 'max:10'],
             'sks_matkul' => ['required', 'numeric'],
             'nama_matkul' => ['required'],
             'status_matkul' => ['boolean'],
@@ -141,31 +141,31 @@ class MatakuliahController extends Controller
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
         ];
+        $validator = Validator::make($request->all(), $rules, $message);
+        if ($validator->fails()) {
+            $response = [
+                'status' => 400,
+                'message' => $validator->errors()
+            ];
+            return response()->json($response, 400);
+        }
+
+
+        $updated = [
+            'sks_matkul' => $request->sks_matkul,
+            'nama_matkul' => $request->nama_matkul,
+            'status_matkul' => $request->status_matkul,
+            'kode_prodi' => $request->kode_prodi,
+            'updated_at' => now()
+        ];
+        if ($request->kode_matkul_new) {
+            $updated['kode_matkul'] = $request->kode_matkul_new;
+        }
+        $where = [
+            'kode_matkul' => $request->kode_matkul
+        ];
+
         try {
-            $validator = Validator::make($request->all(), $rules, $message);
-            if ($validator->fails()) {
-                $response = [
-                    'status' => 400,
-                    'message' => $validator->errors()
-                ];
-                return response()->json($response, 400);
-            }
-
-
-            $updated = [
-                'sks_matkul' => $request->sks_matkul,
-                'nama_matkul' => $request->nama_matkul,
-                'status_matkul' => $request->status_matkul,
-                'kode_prodi' => $request->kode_prodi,
-                'updated_at' => now()
-            ];
-            if ($request->kode_matkul_new) {
-                $updated['kode_matkul'] = $request->kode_matkul_new;
-            }
-            $where = [
-                'kode_matkul' => $request->kode_matkul
-            ];
-
             $mata_kuliah = mata_kuliah::where($where);
             $res = $mata_kuliah->update($updated);
             if (!$res) {
