@@ -89,7 +89,7 @@ class HariController extends Controller
     public function show(Request $request)
     {
         $rules = [
-            'id' => ['required', 'exists:hari,id']
+            'id' => ['required', 'exists:hari,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
@@ -121,7 +121,7 @@ class HariController extends Controller
     public function update(Request $request)
     {
         $rules = [
-            'id' => ['required', 'exists:hari,id'],
+            'id' => ['required', 'exists:hari,id,deleted_at,NULL'],
             'nama_hari' => ['required'],
         ];
         $message = [
@@ -180,7 +180,7 @@ class HariController extends Controller
             'id' => $request->id
         ];
         $rules = [
-            'id' => ['required', 'exists:hari,id']
+            'id' => ['required', 'exists:hari,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
