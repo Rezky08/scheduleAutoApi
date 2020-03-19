@@ -178,7 +178,7 @@ class RuangController extends Controller
             'id' => $request->id
         ];
         $rules = [
-            'id' => ['required', 'exists:ruang,id']
+            'id' => ['required', 'exists:ruang,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
