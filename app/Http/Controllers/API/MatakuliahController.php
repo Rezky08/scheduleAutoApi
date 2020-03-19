@@ -48,7 +48,7 @@ class MatakuliahController extends Controller
     public function store(Request $request)
     {
         $rules = [
-            'kode_matkul' => ['required', 'unique:mata_kuliah,kode_matkul', 'max:10'],
+            'kode_matkul' => ['required', 'unique:mata_kuliah,kode_matkul,deleted_at,NULL', 'max:10'],
             'sks_matkul' => ['required', 'numeric'],
             'nama_matkul' => ['required'],
             'status_matkul' => ['boolean'],
