@@ -85,7 +85,7 @@ class RuangController extends Controller
     {
 
         $rules = [
-            'id' => ['required', 'exists:ruang,id']
+            'id' => ['required', 'exists:ruang,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
@@ -117,7 +117,7 @@ class RuangController extends Controller
     public function update(Request $request)
     {
         $rules = [
-            'id' => ['required', 'exists:ruang,id'],
+            'id' => ['required', 'exists:ruang,id,deleted_at,NULL'],
             'nama_ruang' => ['required'],
             'keterangan' => ['required'],
         ];
