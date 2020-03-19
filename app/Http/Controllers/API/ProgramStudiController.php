@@ -51,7 +51,7 @@ class ProgramStudiController extends Controller
         // validasi inputan
         // ngecek ada inputan yang nama nya kode_prodi sama nama_prodi dengan rules begitu
         $rules = [
-            'kode_prodi' => ['required', 'unique:program_studi,kode_prodi,NULL,id,deleted_at,NULL', 'max:10'],
+            'kode_prodi' => ['required', 'unique:program_studi,kode_prodi,NULL,kode_prodi,deleted_at,NULL', 'max:10'],
             'nama_prodi' => ['required'],
             'keterangan_prodi' => ['sometimes', 'required'],
         ];
@@ -101,7 +101,7 @@ class ProgramStudiController extends Controller
     {
         // Validasi apakah ada inputan bernama kode_prodi atau tidak
         $rules = [
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi']
+            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL']
         ];
         $message = [
             'kode_prodi.exists' => 'sorry, we cannot find what are you looking for.'
@@ -134,11 +134,10 @@ class ProgramStudiController extends Controller
     {
         // ini paham
         $rules = [
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi'],
-            'kode_prodi_new' => ['sometimes', 'required', 'different:kode_prodi', 'unique:program_studi,kode_prodi', 'max:10'],
+            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL'],
+            'kode_prodi_new' => ['sometimes', 'required', 'different:kode_prodi', 'unique:program_studi,kode_prodi,' . $request->kode_prodi_new . ',kode_prodi,deleted_at,NULL', 'max:10'],
             'nama_prodi' => ['required'],
             'keterangan_prodi' => ['sometimes', 'required'],
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi'], // ini itu nagmbil dari tabel lain kan?
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
@@ -200,7 +199,7 @@ class ProgramStudiController extends Controller
     public function destroy(Request $request)
     {
         $rules = [
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi']
+            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL']
         ];
         $message = [
             'kode_prodi.exists' => 'sorry, we cannot find what are you looking for.'
