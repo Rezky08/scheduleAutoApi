@@ -98,7 +98,7 @@ class MatakuliahController extends Controller
     public function show(Request $request)
     {
         $rules = [
-            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul']
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL']
         ];
         $message = [
             'kode_matkul.exists' => 'sorry, we cannot find what are you looking for.'
@@ -131,8 +131,8 @@ class MatakuliahController extends Controller
     {
 
         $rules = [
-            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul'],
-            'kode_matkul_new' => ['sometimes', 'required', 'different:kode_matkul', 'unique:mata_kuliah,kode_matkul', 'max:10'],
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL'],
+            'kode_matkul_new' => ['sometimes', 'required', 'different:kode_matkul', 'unique:mata_kuliah,kode_matkul,' . $request->kode_matkul_new . ',id,deleted_at,NULL', 'max:10'],
             'sks_matkul' => ['required', 'numeric'],
             'nama_matkul' => ['required'],
             'status_matkul' => ['boolean'],
