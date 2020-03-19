@@ -198,7 +198,7 @@ class MatakuliahController extends Controller
     public function destroy(Request $request)
     {
         $rules = [
-            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul']
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL']
         ];
         $message = [
             'kode_matkul.exists' => 'sorry, we cannot find what are you looking for.'
