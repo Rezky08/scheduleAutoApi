@@ -52,7 +52,7 @@ class MatakuliahController extends Controller
             'sks_matkul' => ['required', 'numeric'],
             'nama_matkul' => ['required'],
             'status_matkul' => ['boolean'],
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi'],
+            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL'],
         ];
 
         $validator = Validator::make($request->all(), $rules);
