@@ -20,7 +20,6 @@ class CreateKrsMataKuliahTable extends Migration
             $table->integer('jumlah_krs');
             $table->timestamps();
             $table->softDeletes();
-            $table->unique(['kode_krs','kode_matkul']);
         });
     }
 
