@@ -20,6 +20,7 @@ class CreateKrsTable extends Migration
             $table->string('tahun_ajar', 10);
             $table->timestamps();
             $table->softDeletes();
+            $table->unique('kode_krs');
         });
     }
 

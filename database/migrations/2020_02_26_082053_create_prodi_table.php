@@ -20,6 +20,7 @@ class CreateProdiTable extends Migration
             $table->text('keterangan_prodi')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            $table->unique('kode_prodi');
         });
     }
 

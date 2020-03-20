@@ -19,6 +19,7 @@ class CreateRuangTable extends Migration
             $table->text('keterangan')->nullable();
             $table->timestamps();
             $table->softDeletes();
+            $table->unique('nama_ruang');
         });
     }
 

@@ -22,6 +22,7 @@ class CreateMataKuliahTable extends Migration
             $table->string('kode_prodi', 10);
             $table->timestamps();
             $table->softDeletes();
+            $table->unique('kode_matkul');
         });
     }
 
