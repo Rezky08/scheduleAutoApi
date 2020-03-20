@@ -26,10 +26,10 @@ Route::get('/program_studi', 'API\ProgramStudiController@index');
 Route::put('/program_studi', 'API\ProgramStudiController@update');
 Route::delete('/program_studi', 'API\ProgramStudiController@destroy');
 
-Route::post('/ruang', 'API\ruangController@store');
-Route::get('/ruang', 'API\ruangController@index');
-Route::put('/ruang', 'API\ruangController@update');
-Route::delete('/ruang', 'API\ruangController@destroy');
+Route::post('/ruang', 'API\RuangController@store');
+Route::get('/ruang', 'API\RuangController@index');
+Route::put('/ruang', 'API\RuangController@update');
+Route::delete('/ruang', 'API\RuangController@destroy');
 
 Route::post('/hari', 'API\HariController@store');
 Route::get('/hari', 'API\HariController@index');
