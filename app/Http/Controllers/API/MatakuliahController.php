@@ -139,7 +139,7 @@ class MatakuliahController extends Controller
             'kode_prodi' => ['required', 'exists:program_studi,kode_prodi'],
         ];
         $message = [
-            'id.exists' => 'sorry, we cannot find what are you looking for.'
+            'kode_matkul.exists' => 'sorry, we cannot find what are you looking for.'
         ];
         $validator = Validator::make($request->all(), $rules, $message);
         if ($validator->fails()) {
