@@ -40,3 +40,7 @@ Route::post('/jam', 'API\JamController@store');
 Route::get('/jam', 'API\JamController@index');
 Route::put('/jam', 'API\JamController@update');
 Route::delete('/jam', 'API\JamController@destroy');
+
+Route::get('/krs','API\KrsController@index');
+Route::post('/krs','API\KrsController@store');
+
