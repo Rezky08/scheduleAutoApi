@@ -41,6 +41,10 @@ Route::get('/jam', 'API\JamController@index');
 Route::put('/jam', 'API\JamController@update');
 Route::delete('/jam', 'API\JamController@destroy');
 
-Route::get('/krs','API\KrsController@index');
-Route::post('/krs','API\KrsController@store');
+Route::get('/krs', 'API\KrsController@index');
+Route::post('/krs', 'API\KrsController@store');
 
+Route::get('/dosen', 'API\DosenController@index');
+Route::post('/dosen', 'API\DosenController@store');
+Route::put('/dosen', 'API\DosenController@update');
+Route::delete('/dosen', 'API\DosenController@destroy');
