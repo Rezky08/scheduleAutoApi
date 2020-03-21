@@ -48,3 +48,5 @@ Route::get('/dosen', 'API\DosenController@index');
 Route::post('/dosen', 'API\DosenController@store');
 Route::put('/dosen', 'API\DosenController@update');
 Route::delete('/dosen', 'API\DosenController@destroy');
+
+Route::get('/python', 'API\PythonEngineController@index');
