@@ -11,4 +11,9 @@ class Matakuliah extends Model
     protected $table = 'mata_kuliah';
     protected $dates = ['deleted_at'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
+
+    public function dosen_matkul()
+    {
+        return $this->hasMany(DosenMatakuliah::class, 'kode_matkul', 'kode_matkul');
+    }
 }
