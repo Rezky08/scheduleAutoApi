@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnLab extends Migration
+class AddKapasitasColumnToTableRuang extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddColumnLab extends Migration
      */
     public function up()
     {
-        Schema::table('mata_kuliah', function (Blueprint $table) {
-            $table->boolean('lab_matkul')->after('status_matkul')->default(false);
+        Schema::table('ruang', function (Blueprint $table) {
+            $table->integer('kapasitas')->after('keterangan')->default(0);
         });
     }
 
@@ -25,8 +25,8 @@ class AddColumnLab extends Migration
      */
     public function down()
     {
-        Schema::table('mata_kuliah', function (Blueprint $table) {
-            $table->dropColumn('lab_matkul');
+        Schema::table('ruang', function (Blueprint $table) {
+            $table->dropColumn('kapasitas');
         });
     }
 }

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddColumnLab extends Migration
+class CreateSesiTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,12 @@ class AddColumnLab extends Migration
      */
     public function up()
     {
-        Schema::table('mata_kuliah', function (Blueprint $table) {
-            $table->boolean('lab_matkul')->after('status_matkul')->default(false);
+        Schema::create('sesi', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->time('sesi_mulai');
+            $table->time('sesi_selesai');
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -25,8 +29,6 @@ class AddColumnLab extends Migration
      */
     public function down()
     {
-        Schema::table('mata_kuliah', function (Blueprint $table) {
-            $table->dropColumn('lab_matkul');
-        });
+        Schema::dropIfExists('sesi');
     }
 }
