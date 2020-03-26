@@ -36,10 +36,10 @@ Route::get('/hari', 'API\HariController@index');
 Route::put('/hari', 'API\HariController@update');
 Route::delete('/hari', 'API\HariController@destroy');
 
-Route::post('/jam', 'API\JamController@store');
-Route::get('/jam', 'API\JamController@index');
-Route::put('/jam', 'API\JamController@update');
-Route::delete('/jam', 'API\JamController@destroy');
+Route::post('/sesi', 'API\SesiController@store');
+Route::get('/sesi', 'API\SesiController@index');
+Route::put('/sesi', 'API\SesiController@update');
+Route::delete('/sesi', 'API\SesiController@destroy');
 
 Route::get('/krs', 'API\KrsController@index');
 Route::post('/krs', 'API\KrsController@store');
@@ -50,3 +50,4 @@ Route::put('/dosen', 'API\DosenController@update');
 Route::delete('/dosen', 'API\DosenController@destroy');
 
 Route::get('/python', 'API\PythonEngineController@index');
+Route::post('/python', 'API\PythonEngineController@store');
