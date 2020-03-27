@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Dosen;
 use App\Helpers\Host;
-use App\Helpers\Request_api;
 use App\Http\Controllers\Controller;
 use App\Jadwal;
 use App\Jobs\PythonDosen;
@@ -12,7 +10,6 @@ use App\Krs;
 use App\Matakuliah;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
