@@ -41,8 +41,8 @@ Route::get('/sesi', 'API\SesiController@index');
 Route::put('/sesi', 'API\SesiController@update');
 Route::delete('/sesi', 'API\SesiController@destroy');
 
-Route::get('/krs', 'API\KrsController@index');
-Route::post('/krs', 'API\KrsController@store');
+Route::get('/peminat', 'API\PeminatController@index');
+Route::post('/peminat', 'API\PeminatController@store');
 
 Route::get('/dosen', 'API\DosenController@index');
 Route::post('/dosen', 'API\DosenController@store');
