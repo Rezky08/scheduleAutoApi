@@ -12,9 +12,14 @@ class unique_with implements Rule
      *
      * @return void
      */
-    public function __construct($params)
+    protected $message = ':attribute has already been taken.';
+    public function __construct($params, $ignore = null, $message = '')
     {
+        if ($message != '') {
+            $this->message = $message;
+        }
         $this->params = explode(',', $params);
+        $this->ignore = explode(',', $ignore);
     }
 
     /**
@@ -34,6 +39,9 @@ class unique_with implements Rule
                 $whereCond[$field] = null;
             }
         }
+        while ($field = array_shift($this->ignore)) {
+            $whereCond[] = [$field, '!=', array_shift($this->ignore)];
+        }
         $getData = DB::table($table_name)->where($whereCond)->first();
         if (is_null($getData)) {
             return true;
@@ -49,6 +57,6 @@ class unique_with implements Rule
      */
     public function message()
     {
-        return ':attribute must be unique';
+        return $this->message;
     }
 }
