@@ -17,8 +17,7 @@ class CreatePeminatDetailTable extends Migration
             $table->id();
             $table->bigInteger('peminat_id');
             $table->string('kode_matkul', 10);
-            $table->string('kelompok', 10);
-            $table->string('kode_dosen', 10);
+            $table->string('jumlah_peminat', 10);
             $table->timestamps();
             $table->softDeletes();
         });
