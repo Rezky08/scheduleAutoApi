@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Hari as hari;
+use App\Rules\table_column;
+use Exception;
 use Illuminate\Http\Request;
 
 class HariController extends Controller
@@ -16,10 +18,11 @@ class HariController extends Controller
      */
     public function index(Request $request)
     {
-        // check apa ada parameter id
-        if ($request->id) {
+        // check apakah ada request
+        if (count($request->all()) > 0) {
             return $this->show($request);
         }
+
 
         try {
             $hari = hari::all();
@@ -27,13 +30,16 @@ class HariController extends Controller
                 'status' => 200,
                 'data' => $hari
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 
@@ -56,7 +62,7 @@ class HariController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
         $insertToDB = [
             'nama_hari' => $request->nama_hari,
@@ -65,19 +71,22 @@ class HariController extends Controller
         ];
         try {
             hari::insert($insertToDB);
-        } catch (\Throwable $e) {
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
 
         $response = [
             'status' => 200,
             'message' => 'hari kuliah ' . $request->nama_hari . ' Berhasil ditambahkan'
         ];
-        return response()->json($response, 200);
+        return response()->json($response, $response['status']);
     }
 
     /**
@@ -88,27 +97,36 @@ class HariController extends Controller
      */
     public function show(Request $request)
     {
+        $table_column = collect($request->all())->keys()->toArray();
         $rules = [
-            'id' => ['required', 'exists:hari,id,deleted_at,NULL']
+            'column' => ['required', new table_column('hari')]
         ];
-        $message = [
-            'id.exists' => 'sorry, we cannot find what are you looking for.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
-        $hari = hari::where('id', $request->id)->first();
-        $response = [
-            'status' => 200,
-            'data' => $hari
-        ];
-        return response()->json($response, 200);
+        try {
+            $hari = hari::where($request->all())->get();
+            $response = [
+                'status' => 200,
+                'data' => $hari
+            ];
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
+            $response = [
+                'status' => 500,
+                'message' => "Internal Server Error"
+            ];
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
+        }
     }
 
     /**
@@ -133,38 +151,40 @@ class HariController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
-        $updated = [
-            'nama_hari' => $request->nama_hari,
-            'updated_at' => now()
-        ];
-        $where = [
-            'id' => $request->id
-        ];
+        // key accepted
+        $accepted_key = collect($rules)->except('id')->keys();
+        $update = collect($request->all())->only($accepted_key);
 
         try {
-            $hari = hari::where($where);
-            $res = $hari->update($updated);
-            if (!$res) {
-                $response = [
-                    'status' => 200,
-                    'message' => 'Tidak ada perubahan'
-                ];
-                return response()->json($response, 200);
-            }
+            $hari = hari::find($request->id);
+
+            $update->map(function ($item, $key) use ($hari) {
+                $hari[$key] = $item;
+            });
+            $hari->save();
+
             $response = [
                 'status' => 200,
                 'message' => 'hari dengan kode ' . $request->id . ' berhasil diubah'
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+
+            if (!$hari->getChanges()) {
+                $response['message'] = "Tidak ada perubahan";
+            }
+
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 
@@ -176,51 +196,40 @@ class HariController extends Controller
      */
     public function destroy(Request $request)
     {
-        $data = [
-            'id' => $request->id
-        ];
         $rules = [
             'id' => ['required', 'exists:hari,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
         ];
-        $validator = Validator::make($data, $rules, $message);
+        $validator = Validator::make($request->all(), $rules, $message);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
         try {
-            $where = [
-                'id' => $request->id
-            ];
-            $hari = hari::where($where);
-            $count = $hari->count();
-            if ($count < 1) {
-                $response = [
-                    'status' => 400,
-                    'message' => 'Sorry, we cannot find what are you looking for.'
-                ];
-                return response()->json($response, 200);
-            }
-
+            $hari = new hari();
+            $hari = $hari->find($request->id);
             $hari->delete();
 
             $response = [
                 'status' => 200,
-                'message' => 'hari dengan Kode ' . $request->id . ' berhasil dihapus.'
+                'message' => 'hari ' . ucfirst($hari->nama_hari) . ' dengan Kode ' . $hari->id . ' berhasil dihapus.'
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 }

@@ -62,7 +62,7 @@ class PythonEngineController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
         // prepare for send to python engine
         $whereCond = [

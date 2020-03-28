@@ -1,17 +1,18 @@
 <?php
 
-
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Dosen as dosen;
+use App\Peminat;
+use App\PeminatDetail;
 use App\Rules\table_column;
+use App\Rules\unique_with;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class DosenController extends Controller
+class PeminatDetailController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -20,16 +21,14 @@ class DosenController extends Controller
      */
     public function index(Request $request)
     {
-        // check apakah ada request
         if (count($request->all()) > 0) {
             return $this->show($request);
         }
-
         try {
-            $dosen = dosen::all();
+            $peminat_detail = PeminatDetail::all();
             $response = [
                 'status' => 200,
-                'data' => $dosen->toArray()
+                'data' => $peminat_detail
             ];
             return response()->json($response, $response['status']);
         } catch (Exception $e) {
@@ -52,11 +51,12 @@ class DosenController extends Controller
      */
     public function store(Request $request)
     {
+        // validasi input
         $rules = [
-            'kode_dosen' => ['required', 'unique:dosen,kode_dosen,NULL,id,deleted_at,NULL'],
-            'nama_dosen' => ['required'],
+            'peminat_id' => ['required', 'exists:peminat,id,deleted_at,NULL'],
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL', new unique_with('peminat_detail,peminat_id,' . $request->peminat_id . ',kode_matkul,' . $request->kode_matkul . ',deleted_at,NULL')],
+            'jumlah_peminat' => ['required', 'numeric']
         ];
-
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             $response = [
@@ -65,14 +65,24 @@ class DosenController extends Controller
             ];
             return response()->json($response, $response['status']);
         }
+
+
         $insertToDB = [
-            'kode_dosen' => $request->kode_dosen,
-            'nama_dosen' => $request->nama_dosen,
-            'created_at' => now(),
-            'updated_at' => now()
+            'kode_matkul' => $request->kode_matkul,
+            'jumlah_peminat' => $request->jumlah_peminat,
+            'peminat_id' => $request->peminat_id,
+            'created_at' => date('Y-m-d H:i:s', time()),
+            'updated_at' => date('Y-m-d H:i:s', time()),
         ];
+
+
         try {
-            dosen::insert($insertToDB);
+            PeminatDetail::insert($insertToDB);
+            $response = [
+                'status' => 200,
+                'message' => "Berhasil Menambahkan Peminat Mata Kuliah " . $request->kode_matkul . " dengan Jumlah Peminat " . $request->jumlah_peminat . "."
+            ];
+            return response()->json($response, $response['status']);
         } catch (Exception $e) {
             $response = [
                 'status' => 500,
@@ -83,12 +93,6 @@ class DosenController extends Controller
             }
             return response()->json($response, $response['status']);
         }
-
-        $response = [
-            'status' => 200,
-            'message' => 'Dosen ' . $request->nama_dosen . ' (' . $request->kode_dosen . ') Berhasil ditambahkan'
-        ];
-        return response()->json($response, $response['status']);
     }
 
     /**
@@ -101,7 +105,7 @@ class DosenController extends Controller
     {
         $table_column = collect($request->all())->keys()->toArray();
         $rules = [
-            'column' => ['required', new table_column('dosen')]
+            'column' => ['required', new table_column('peminat_detail')]
         ];
         $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
         if ($validator->fails()) {
@@ -112,16 +116,12 @@ class DosenController extends Controller
             return response()->json($response, $response['status']);
         }
 
-        $whereCond = collect($request->all());
-        $whereCond = $whereCond->map(function ($item) {
-            return $item;
-        });
 
         try {
-            $dosen = dosen::where($request->all())->get();
+            $peminat_detail = PeminatDetail::where($request->all())->get();
             $response = [
                 'status' => 200,
-                'data' => $dosen
+                'data' => $peminat_detail
             ];
             return response()->json($response, $response['status']);
         } catch (Exception $e) {
@@ -145,15 +145,19 @@ class DosenController extends Controller
      */
     public function update(Request $request)
     {
+        $peminat_detail = PeminatDetail::find($request->id);
+        try {
+            $request->request->add(['peminat_id' => $peminat_detail->peminat_id]);
+        } catch (Exception $e) {
+        }
+
+        // validasi input
         $rules = [
-            'id' => ['required', 'exists:dosen,id,deleted_at,NULL'],
-            'kode_dosen' => ['required', Rule::unique('dosen', 'kode_dosen')->ignore($request->id, 'id')],
-            'nama_dosen' => ['required', 'max:100'],
+            'id' => ['bail', 'required', 'exists:peminat_detail,id,deleted_at,NULL'],
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL', new unique_with('peminat_detail,peminat_id,' . $request->peminat_id . ',kode_matkul,' . $request->kode_matkul . ',deleted_at,NULL', 'id,' . $request->id)],
+            'jumlah_peminat' => ['required', 'numeric']
         ];
-        $message = [
-            'kode_dosen.exists' => 'sorry, we cannot find what are you looking for.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
@@ -162,26 +166,30 @@ class DosenController extends Controller
             return response()->json($response, $response['status']);
         }
 
-        // key accepted
-        $accepted_key = ['kode_dosen', 'nama_dosen'];
+
+        $peminat_detail = PeminatDetail::find($request->id);
+        if ($peminat_detail->kode_matkul == $request->kode_matkul) {
+            $request->request->remove('kode_matkul');
+        }
+
+
+        // update key only
+        $accepted_key = collect($rules)->except('id')->keys();
         $update = collect($request->all())->only($accepted_key);
 
-        try {
-            $dosen = dosen::find($request->id);
-            $update->map(function ($item, $key) use ($dosen) {
-                $dosen[$key] = $item;
-            });
-            $dosen->save();
 
+        try {
+            $update->map(function ($item, $key) use ($peminat_detail) {
+                $peminat_detail[$key] = $item;
+            });
+            $peminat_detail->save();
             $response = [
                 'status' => 200,
-                'message' => 'Dosen ' . $dosen->nama_dosen . ' (' . $dosen->kode_dosen . ') berhasil diubah'
+                'message' => "Berhasil Mengubah Peminat Mata Kuliah " . $peminat_detail->mata_kuliah->nama_matkul . " (" . $peminat_detail->kode_matkul . ") dengan Jumlah Peminat " . $peminat_detail->jumlah_peminat . "."
             ];
-
-            if (!$dosen->getChanges()) {
+            if (!$peminat_detail->getChanges()) {
                 $response['message'] = "Tidak ada perubahan";
             }
-
             return response()->json($response, $response['status']);
         } catch (Exception $e) {
             $response = [
@@ -203,14 +211,10 @@ class DosenController extends Controller
      */
     public function destroy(Request $request)
     {
-
         $rules = [
-            'id' => ['required', 'exists:dosen,id,deleted_at,NULL']
+            'id' => ['required', 'exists:peminat_detail,id,deleted_at,NULL']
         ];
-        $message = [
-            'id.exists' => 'sorry, we cannot find what are you looking for.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
@@ -220,12 +224,11 @@ class DosenController extends Controller
         }
 
         try {
-            $dosen = dosen::find($request->id);
-            $dosen->delete();
-
+            $peminat_detail = PeminatDetail::find($request->id);
+            $peminat_detail->delete();
             $response = [
                 'status' => 200,
-                'message' => 'Dosen ' . $dosen->nama_dosen . ' (' . $dosen->kode_dosen . ') berhasil dihapus.'
+                'message' => 'Peminat Mata Kuliah ' . $peminat_detail->mata_kuliah->nama_matkul . ' (' . $peminat_detail->kode_matkul . ') berhasil dihapus.'
             ];
             return response()->json($response, $response['status']);
         } catch (Exception $e) {

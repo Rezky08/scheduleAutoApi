@@ -29,13 +29,13 @@ class KrsController extends Controller
                 'status' => 200,
                 'data' => $krs
             ];
-            return response()->json($response, 200);
+            return response()->json($response, $response['status']);
         } catch (\Throwable $e) {
             $response = [
                 'status' => 500,
                 'message' => $e
             ];
-            return response()->json($response, 500);
+            return response()->json($response, $response['status']);
         }
     }
 
@@ -62,7 +62,7 @@ class KrsController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
         // get content
@@ -97,7 +97,7 @@ class KrsController extends Controller
                 'message' => 'Kode Mata Kuliah Tidak Ditemukan.',
                 'data' => $kode_matkul_check->toArray(),
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
         // insert kode krs
@@ -138,7 +138,7 @@ class KrsController extends Controller
             'status' => 200,
             'message' => 'KRS Tahun Ajaran ' . $request->tahun_ajar . ' Semester ' . $semester
         ];
-        return response()->json($response, 200);
+        return response()->json($response, $response['status']);
     }
 
     /**
@@ -161,7 +161,7 @@ class KrsController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
         $krs = Krs::where('kode_krs', $request->kode_krs)->first();
@@ -169,7 +169,7 @@ class KrsController extends Controller
             'status' => 200,
             'data' => $krs->krs_matkul
         ];
-        return response()->json($response, 200);
+        return response()->json($response, $response['status']);
     }
 
     /**

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 // masukin yang diperluin buat file ini
 use App\ProgramStudi as program_studi;
+use App\Rules\table_column;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class ProgramStudiController extends Controller
 {
@@ -18,24 +21,25 @@ class ProgramStudiController extends Controller
     public function index(Request $request)
     {
 
-        // check apa ada parameter id
-        if ($request->kode_prodi) {
+        if (count($request->all()) > 0) {
             return $this->show($request);
         }
-
         try {
             $program_studi = program_studi::all();
             $response = [
                 'status' => 200,
                 'data' => $program_studi
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 
@@ -65,7 +69,7 @@ class ProgramStudiController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
         $insertToDB = [
             'kode_prodi' => $request->kode_prodi,
@@ -76,19 +80,21 @@ class ProgramStudiController extends Controller
         ];
         try {
             program_studi::insert($insertToDB);
-        } catch (\Throwable $e) {
+            $response = [
+                'status' => 200,
+                'message' => 'Program Studi ' . $request->nama_prodi . ' (' . $request->kode_prodi . ') Berhasil ditambahkan'
+            ];
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
-
-        $response = [
-            'status' => 200,
-            'message' => 'Program Studi ' . $request->nama_prodi . ' (' . $request->kode_prodi . ') Berhasil ditambahkan'
-        ];
-        return response()->json($response, 200);
     }
 
     /**
@@ -99,28 +105,37 @@ class ProgramStudiController extends Controller
      */
     public function show(Request $request)
     {
-        // Validasi apakah ada inputan bernama kode_prodi atau tidak
+        $table_column = collect($request->all())->keys()->toArray();
         $rules = [
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL']
+            'column' => ['required', new table_column('program_studi')]
         ];
-        $message = [
-            'kode_prodi.exists' => 'sorry, we cannot find what are you looking for.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
-        $program_studi = program_studi::where('kode_prodi', $request->kode_prodi)->first();
-        $response = [
-            'status' => 200,
-            'data' => $program_studi
-        ];
-        return response()->json($response, 200);
+
+        try {
+            $program_studi = program_studi::where($request->all())->get();
+            $response = [
+                'status' => 200,
+                'data' => $program_studi
+            ];
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
+            $response = [
+                'status' => 500,
+                'message' => "Internal Server Error"
+            ];
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
+        }
     }
 
     /**
@@ -134,8 +149,8 @@ class ProgramStudiController extends Controller
     {
         // ini paham
         $rules = [
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL'],
-            'kode_prodi_new' => ['sometimes', 'required', 'different:kode_prodi', 'unique:program_studi,kode_prodi,' . $request->kode_prodi_new . ',kode_prodi,deleted_at,NULL', 'max:10'],
+            'id' => ['required', 'exists:program_studi,id,deleted_at,NULL'],
+            'kode_prodi' => ['required', Rule::unique('program_studi', 'kode_prodi')->ignore($request->id, 'id')],
             'nama_prodi' => ['required'],
             'keterangan_prodi' => ['sometimes', 'required'],
         ];
@@ -149,44 +164,38 @@ class ProgramStudiController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
-        //ini seharusnya proses updatenya ya soalnya ada wherenya kek semacam query di laravel
-        // ini cuma persiapan nya, yang kiri nama kolom nya yang kanan isinya
-        $updated = [
-            'kode_prodi' => $request->kode_prodi,
-            'nama_prodi' => $request->nama_prodi,
-            'keterangan_prodi' => $request->keterangan_prodi,
-            'updated_at' => now()
-        ];
-        // update dimana matkul yang di iinput
-        $where = [
-            'kode_prodi' => $request->kode_prodi
-        ];
-        // apa inih?
-        // querynya dijalanin disini
+        // update key only
+        $accepted_key = collect($rules)->except('id')->keys();
+        $update = collect($request->all())->only($accepted_key);
+
         try {
-            $program_studi = program_studi::where($where);
-            $res = $program_studi->update($updated);
-            if (!$res) {
-                $response = [
-                    'status' => 200,
-                    'message' => 'Tidak ada perubahan'
-                ];
-                return response()->json($response, 200);
-            }
+            $program_studi = program_studi::find($request->id);
+            $update->map(function ($item, $key) use ($program_studi) {
+                $program_studi[$key] = $item;
+            });
+            $program_studi->save();
+
             $response = [
                 'status' => 200,
-                'message' => 'Program Studi dengan kode ' . $request->kode_prodi . ' berhasil diubah'
+                'message' => 'Program Studi ' . $program_studi->nama_prodi . ' (' . $program_studi->kode_prodi . ') berhasil diubah'
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            if (!$program_studi->getChanges()) {
+                $response['message'] = "Tidak ada perubahan";
+            }
+
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 
@@ -199,10 +208,10 @@ class ProgramStudiController extends Controller
     public function destroy(Request $request)
     {
         $rules = [
-            'kode_prodi' => ['required', 'exists:program_studi,kode_prodi,deleted_at,NULL']
+            'id' => ['required', 'exists:program_studi,id,deleted_at,NULL']
         ];
         $message = [
-            'kode_prodi.exists' => 'sorry, we cannot find what are you looking for.'
+            'id.exists' => 'sorry, we cannot find what are you looking for.'
         ];
         $validator = Validator::make($request->all(), $rules, $message);
         if ($validator->fails()) {
@@ -210,36 +219,27 @@ class ProgramStudiController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
         try {
-            $where = [
-                'kode_prodi' => $request->kode_prodi
-            ];
-            $program_studi = program_studi::where($where);
-            $count = $program_studi->count();
-            if ($count < 1) {
-                $response = [
-                    'status' => 400,
-                    'message' => 'Sorry, we cannot find what are you looking for.'
-                ];
-                return response()->json($response, 200);
-            }
-
+            $program_studi = program_studi::find($request->id);
             $program_studi->delete();
 
             $response = [
                 'status' => 200,
-                'message' => 'Program Studi dengan Kode ' . $request->kode_prodi . ' berhasil dihapus.'
+                'message' => 'Program Studi ' . $program_studi->nama_prodi . ' (' . $program_studi->kode_prodi . ') berhasil dihapus'
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 }

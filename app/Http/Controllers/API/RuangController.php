@@ -5,7 +5,10 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Validator;
 use App\Ruang as ruang;
+use App\Rules\table_column;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class RuangController extends Controller
 {
@@ -16,31 +19,32 @@ class RuangController extends Controller
      */
     public function index(Request $request)
     {
-        // check apa ada parameter id
-        if ($request->id) {
+        if (count($request->all()) > 0) {
             return $this->show($request);
         }
-
         try {
             $ruang = ruang::all();
             $response = [
                 'status' => 200,
                 'data' => $ruang
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
     public function store(Request $request)
     {
 
         $rules = [
-            'nama_ruang' => ['required'],
+            'nama_ruang' => ['required', 'unique:ruang,nama_ruang,deleted_at,NULL'],
             'keterangan' => ['required'],
         ];
 
@@ -50,7 +54,7 @@ class RuangController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
         $insertToDB = [
             'nama_ruang' => $request->nama_ruang,
@@ -60,19 +64,21 @@ class RuangController extends Controller
         ];
         try {
             ruang::insert($insertToDB);
-        } catch (\Throwable $e) {
+            $response = [
+                'status' => 200,
+                'message' => 'ruang kuliah ' . $request->nama_ruang . ' Berhasil ditambahkan'
+            ];
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
-
-        $response = [
-            'status' => 200,
-            'message' => 'ruang kuliah ' . $request->nama_ruang . ' Berhasil ditambahkan'
-        ];
-        return response()->json($response, 200);
     }
 
     /**
@@ -83,28 +89,37 @@ class RuangController extends Controller
      */
     public function show(Request $request)
     {
-
+        $table_column = collect($request->all())->keys()->toArray();
         $rules = [
-            'id' => ['required', 'exists:ruang,id,deleted_at,NULL']
+            'column' => ['required', new table_column('ruang')]
         ];
-        $message = [
-            'id.exists' => 'sorry, we cannot find what are you looking for.'
-        ];
-        $validator = Validator::make($request->all(), $rules, $message);
+        $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
-        $ruang = ruang::where('id', $request->id)->first();
-        $response = [
-            'status' => 200,
-            'data' => $ruang
-        ];
-        return response()->json($response, 200);
+
+        try {
+            $ruang = ruang::where($request->all())->get();
+            $response = [
+                'status' => 200,
+                'data' => $ruang
+            ];
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
+            $response = [
+                'status' => 500,
+                'message' => "Internal Server Error"
+            ];
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
+        }
     }
 
     /**
@@ -118,7 +133,7 @@ class RuangController extends Controller
     {
         $rules = [
             'id' => ['required', 'exists:ruang,id,deleted_at,NULL'],
-            'nama_ruang' => ['required'],
+            'nama_ruang' => ['required', Rule::unique('ruang', 'nama_ruang')->ignore($request->id, 'id')],
             'keterangan' => ['required'],
         ];
         $message = [
@@ -130,39 +145,40 @@ class RuangController extends Controller
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
-        $updated = [
-            'nama_ruang' => $request->nama_ruang,
-            'keterangan' => $request->keterangan,
-            'updated_at' => now()
-        ];
-        $where = [
-            'id' => $request->id
-        ];
+        // update key only
+        $accepted_key = collect($rules)->except('id')->keys();
+        $update = collect($request->all())->only($accepted_key);
+
 
         try {
-            $ruang = ruang::where($where);
-            $res = $ruang->update($updated);
-            if (!$res) {
-                $response = [
-                    'status' => 200,
-                    'message' => 'Tidak ada perubahan'
-                ];
-                return response()->json($response, 200);
-            }
+            $ruang = ruang::find($request->id);
+            $update->map(function ($item, $key) use ($ruang) {
+                $ruang[$key] = $item;
+            });
+            $ruang->save();
+
             $response = [
                 'status' => 200,
-                'message' => 'ruang dengan kode ' . $request->id . ' berhasil diubah'
+                'message' => 'ruang ' . $ruang->nama_ruang . '(' . $request->id . ') dengan berhasil diubah'
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+
+            if (!$ruang->getChanges()) {
+                $response['message'] = "Tidak ada perubahan";
+            }
+
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 
@@ -174,51 +190,39 @@ class RuangController extends Controller
      */
     public function destroy(Request $request)
     {
-        $data = [
-            'id' => $request->id
-        ];
         $rules = [
             'id' => ['required', 'exists:ruang,id,deleted_at,NULL']
         ];
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
         ];
-        $validator = Validator::make($data, $rules, $message);
+        $validator = Validator::make($request->all(), $rules, $message);
         if ($validator->fails()) {
             $response = [
                 'status' => 400,
                 'message' => $validator->errors()
             ];
-            return response()->json($response, 400);
+            return response()->json($response, $response['status']);
         }
 
         try {
-            $where = [
-                'id' => $request->id
-            ];
-            $ruang = ruang::where($where);
-            $count = $ruang->count();
-            if ($count < 1) {
-                $response = [
-                    'status' => 400,
-                    'message' => 'Sorry, we cannot find what are you looking for.'
-                ];
-                return response()->json($response, 200);
-            }
-
+            $ruang = ruang::find($request->id);
             $ruang->delete();
 
             $response = [
                 'status' => 200,
-                'message' => 'ruang dengan Kode ' . $request->id . ' berhasil dihapus.'
+                'message' => 'ruang ' . $ruang->nama_ruang . '(' . $request->id . ') dengan berhasil dihapus'
             ];
-            return response()->json($response, 200);
-        } catch (\Throwable $e) {
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
             $response = [
                 'status' => 500,
-                'message' => $e
+                'message' => "Internal Server Error"
             ];
-            return response()->json($response, 500);
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
         }
     }
 }
