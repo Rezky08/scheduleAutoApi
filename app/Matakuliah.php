@@ -16,4 +16,8 @@ class Matakuliah extends Model
     {
         return $this->hasMany(DosenMatakuliah::class, 'kode_matkul', 'kode_matkul');
     }
+    public function peminat()
+    {
+        return $this->hasMany(PeminatDetail::class, 'kode_matkul', 'kode_matkul');
+    }
 }
