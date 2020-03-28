@@ -42,7 +42,17 @@ Route::put('/sesi', 'API\SesiController@update');
 Route::delete('/sesi', 'API\SesiController@destroy');
 
 Route::get('/peminat', 'API\PeminatController@index');
+Route::put('/peminat', 'API\PeminatController@update');
 Route::post('/peminat', 'API\PeminatController@store');
+Route::delete('/peminat', 'API\PeminatController@destroy');
+
+
+Route::get('/peminat/detail', 'API\PeminatDetailController@index');
+Route::post('/peminat/detail', 'API\PeminatDetailController@store');
+Route::put('/peminat/detail', 'API\PeminatDetailController@update');
+Route::delete('/peminat/detail', 'API\PeminatDetailController@destroy');
+
+
 
 Route::get('/dosen', 'API\DosenController@index');
 Route::post('/dosen', 'API\DosenController@store');
