@@ -59,5 +59,13 @@ Route::post('/dosen', 'API\DosenController@store');
 Route::put('/dosen', 'API\DosenController@update');
 Route::delete('/dosen', 'API\DosenController@destroy');
 
+Route::get('/kelompok_dosen', 'API\KelompokDosenController@index');
+Route::post('/kelompok_dosen', 'API\KelompokDosenController@store');
+Route::put('/kelompok_dosen', 'API\KelompokDosenController@update');
+Route::delete('/kelompok_dosen', 'API\KelompokDosenDetailController@destroy');
+
 Route::get('/python', 'API\PythonEngineController@index');
 Route::post('/python', 'API\PythonEngineController@store');
+
+Route::post('/process', 'API\ProcessItemController@store');
+Route::get('/process', 'API\ProcessItemController@index');
