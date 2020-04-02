@@ -14,21 +14,12 @@ class TemplateController extends Controller
     protected $table_name = '';
     protected $responseMessage = [];
 
-    public function __construct($model = null, $table_name = '', $responseMessage = [])
+    public function __construct($model = null, $table_name = '')
     {
         $this->model = $model;
         $this->table_name = $table_name;
-        if (isset($responseMessage['success'])) {
-            $this->responseMessage['success'] = $responseMessage['success'];
-        } else {
-            $this->responseMessage['success'] = $this->table_name . " Success!";
-        }
-
-        if (isset($responseMessage['error'])) {
-            $this->responseMessage['error'] = $responseMessage['error'];
-        } else {
-            $this->responseMessage['error'] = "Internal Server Error";
-        }
+        $this->responseMessage['success'] = $this->table_name . " Success!";
+        $this->responseMessage['error'] = "Internal Server Error";
     }
 
     public function setResponseMessage($responseMessage = [])
@@ -52,14 +43,17 @@ class TemplateController extends Controller
      */
     public function __translate($variable = '', $modelData = null)
     {
-        preg_match_all("/\:\S{0,}/", $variable, $variable_array);
+        preg_match_all("/\:\S{1,}\.\S{1,}/", $variable, $variable_array);
         $variable_array = collect($variable_array[0]);
         $variable_array = $variable_array->map(function ($item, $key) use ($modelData, &$variable) {
             $item = preg_replace('/\:/', '', $item);
             $item = explode('.', $item);
-            $variabel_name = $item[0];
-            $variable_item = $item[1];
-            $variable = preg_replace("/\:\S{0,}/", $$variabel_name[$variable_item], $variable, 1);
+            $variable_name = array_shift($item);
+            $variable_name = $$variable_name;
+            while ($variable_item = array_shift($item)) {
+                $variable_name = $variable_name->$variable_item;
+            }
+            $variable = preg_replace("/\:\S{1,}\.\S{1,}/", $variable_name, $variable, 1);
         });
 
         return $variable;
@@ -70,10 +64,20 @@ class TemplateController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(Request $request, $responseMessage = [])
+    public function index(Request $request, $rules = [], $validateMessage = [], $responseMessage = [])
     {
         $this->setResponseMessage($responseMessage);
 
+        if ($rules) {
+            $validator = Validator::make($request->all(), $rules, $validateMessage);
+            if ($validator->fails()) {
+                $response = [
+                    'status' => 400,
+                    'message' => $validator->errors()
+                ];
+                return response()->json($response, $response['status']);
+            }
+        }
 
         // check apakah ada request
         if (count($request->all()) > 0) {
