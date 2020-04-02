@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\TemplateController;
 use App\Peminat;
 use App\PeminatDetail;
 use App\Rules\table_column;
@@ -14,6 +15,14 @@ use Illuminate\Validation\Rule;
 
 class PeminatDetailController extends Controller
 {
+    protected $template = null;
+    protected $model = null;
+    public function __construct()
+    {
+        $this->model = new PeminatDetail();
+        $this->template = new TemplateController($this->model, 'peminat_detail');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -24,23 +33,7 @@ class PeminatDetailController extends Controller
         if (count($request->all()) > 0) {
             return $this->show($request);
         }
-        try {
-            $peminat_detail = PeminatDetail::all();
-            $response = [
-                'status' => 200,
-                'data' => $peminat_detail
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        return $this->template->index($request);
     }
 
     /**
@@ -57,42 +50,10 @@ class PeminatDetailController extends Controller
             'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL', new unique_with('peminat_detail,peminat_id,' . $request->peminat_id . ',kode_matkul,' . $request->kode_matkul . ',deleted_at,NULL')],
             'jumlah_peminat' => ['required', 'numeric']
         ];
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-
-        $insertToDB = [
-            'kode_matkul' => $request->kode_matkul,
-            'jumlah_peminat' => $request->jumlah_peminat,
-            'peminat_id' => $request->peminat_id,
-            'created_at' => date('Y-m-d H:i:s', time()),
-            'updated_at' => date('Y-m-d H:i:s', time()),
+        $responseMessage = [
+            'success' => 'Berhasil Menambahkan Peminat Mata Kuliah :modelData.mata_kuliah.nama_matkul ( :modelData.jumlah_peminat ) Tahun Ajaran :modelData.peminat.tahun_ajaran Semester :modelData.peminat.semester_detail.keterangan '
         ];
-
-
-        try {
-            PeminatDetail::insert($insertToDB);
-            $response = [
-                'status' => 200,
-                'message' => "Berhasil Menambahkan Peminat Mata Kuliah " . $request->kode_matkul . " dengan Jumlah Peminat " . $request->jumlah_peminat . "."
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        return $this->template->store($request, $rules, [], $responseMessage);
     }
 
     /**
@@ -103,37 +64,7 @@ class PeminatDetailController extends Controller
      */
     public function show(Request $request)
     {
-        $table_column = collect($request->all())->keys()->toArray();
-        $rules = [
-            'column' => ['required', new table_column('peminat_detail')]
-        ];
-        $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-
-        try {
-            $peminat_detail = PeminatDetail::where($request->all())->get();
-            $response = [
-                'status' => 200,
-                'data' => $peminat_detail
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        return $this->template->show($request);
     }
 
     /**
@@ -157,50 +88,10 @@ class PeminatDetailController extends Controller
             'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL', new unique_with('peminat_detail,peminat_id,' . $request->peminat_id . ',kode_matkul,' . $request->kode_matkul . ',deleted_at,NULL', 'id,' . $request->id)],
             'jumlah_peminat' => ['required', 'numeric']
         ];
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-
-        $peminat_detail = PeminatDetail::find($request->id);
-        if ($peminat_detail->kode_matkul == $request->kode_matkul) {
-            $request->request->remove('kode_matkul');
-        }
-
-
-        // update key only
-        $accepted_key = collect($rules)->except('id')->keys();
-        $update = collect($request->all())->only($accepted_key);
-
-
-        try {
-            $update->map(function ($item, $key) use ($peminat_detail) {
-                $peminat_detail[$key] = $item;
-            });
-            $peminat_detail->save();
-            $response = [
-                'status' => 200,
-                'message' => "Berhasil Mengubah Peminat Mata Kuliah " . $peminat_detail->mata_kuliah->nama_matkul . " (" . $peminat_detail->kode_matkul . ") dengan Jumlah Peminat " . $peminat_detail->jumlah_peminat . "."
-            ];
-            if (!$peminat_detail->getChanges()) {
-                $response['message'] = "Tidak ada perubahan";
-            }
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        $responseMessage = [
+            'success' => 'Berhasil Mengubah Peminat Mata Kuliah :modelData.mata_kuliah.nama_matkul ( :modelData.jumlah_peminat ) Tahun Ajaran :modelData.peminat.tahun_ajaran Semester :modelData.peminat.semester_detail.keterangan '
+        ];
+        return $this->template->update($request, $rules, [], $responseMessage);
     }
 
     /**
@@ -214,32 +105,9 @@ class PeminatDetailController extends Controller
         $rules = [
             'id' => ['required', 'exists:peminat_detail,id,deleted_at,NULL']
         ];
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-        try {
-            $peminat_detail = PeminatDetail::find($request->id);
-            $peminat_detail->delete();
-            $response = [
-                'status' => 200,
-                'message' => 'Peminat Mata Kuliah ' . $peminat_detail->mata_kuliah->nama_matkul . ' (' . $peminat_detail->kode_matkul . ') berhasil dihapus.'
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        $responseMessage = [
+            'success' => 'Berhasil Menghapus Peminat Mata Kuliah :modelData.mata_kuliah.nama_matkul ( :modelData.jumlah_peminat ) Tahun Ajaran :modelData.peminat.tahun_ajaran Semester :modelData.peminat.semester_detail.keterangan '
+        ];
+        return $this->template->destroy($request, $rules, [], $responseMessage);
     }
 }

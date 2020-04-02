@@ -4,22 +4,21 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\TemplateController;
-use App\Peminat;
-use App\Rules\table_column;
+use App\Jadwal;
 use App\Rules\unique_with;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
-class PeminatController extends Controller
+class JadwalController extends Controller
 {
+
     protected $template = null;
+    protected $model = null;
     public function __construct()
     {
-        $model = new Peminat();
-        $this->template = new TemplateController($model, 'peminat');
+        $this->model = new Jadwal();
+        $this->template = new TemplateController($this->model, 'jadwal');
     }
-
 
     /**
      * Display a listing of the resource.
@@ -46,14 +45,14 @@ class PeminatController extends Controller
 
         // validate input
         $rules = [
-            'tahun_ajaran' => ['required', 'regex:/[0-9]{4,4}\/[0-9]{4,4}+$/', new unique_with('peminat,tahun_ajaran,' . $request->tahun_ajaran . ',semester,' . $request->semester . ',deleted_at,NULL')],
+            'tahun_ajaran' => ['required', 'regex:/[0-9]{4,4}\/[0-9]{4,4}+$/', new unique_with('jadwal,tahun_ajaran,' . $request->tahun_ajaran . ',semester,' . $request->semester . ',deleted_at,NULL')],
             'semester' => ['required', 'in:E,O'],
         ];
         $message = [
             'tahun_ajaran.regex' => "sesuaikan format :attribute dengan:  tahun/tahun"
         ];
         $responseMessage = [
-            'success' => 'Peminat Tahun Ajaran :modelData.tahun_ajaran Semester :modelData.semester_detail.keterangan berhasil di tambah'
+            'success' => 'Jadwal Tahun Ajaran :modelData.tahun_ajaran Semester :modelData.semester_detail.keterangan berhasil di tambah'
         ];
         return $this->template->store($request, $rules, $message, $responseMessage);
     }
@@ -78,9 +77,9 @@ class PeminatController extends Controller
      */
     public function update(Request $request)
     {
-        $peminat = Peminat::find($request->id);
+        $jadwal = $this->model->find($request->id);
         try {
-            $request->request->add(['peminat_id' => $peminat->peminat_id]);
+            $request->request->add(['jadwal_id' => $jadwal->jadwal_id]);
         } catch (Exception $e) {
         }
 
@@ -89,12 +88,12 @@ class PeminatController extends Controller
             'tahun_ajaran.unique_with' => 'Tahun Ajaran Semester already has been taken.'
         ];
         $rules = [
-            'id' => ['bail', 'required', 'exists:peminat,id,deleted_at,NULL'],
-            'tahun_ajaran' => ['required', 'regex:/[0-9]{4,4}\/[0-9]{4,4}+$/', new unique_with('peminat,tahun_ajaran,' . $request->tahun_ajaran . ',semester,' . $request->semester . ',deleted_at,NULL', 'id,' . $request->id, $message['tahun_ajaran.unique_with'])],
+            'id' => ['bail', 'required', 'exists:jadwal,id,deleted_at,NULL'],
+            'tahun_ajaran' => ['required', 'regex:/[0-9]{4,4}\/[0-9]{4,4}+$/', new unique_with('jadwal,tahun_ajaran,' . $request->tahun_ajaran . ',semester,' . $request->semester . ',deleted_at,NULL', 'id,' . $request->id, $message['tahun_ajaran.unique_with'])],
             'semester' => ['required', 'in:E,O'],
         ];
         $responseMessage = [
-            'success' => 'Peminat Tahun Ajaran :modelData.tahun_ajaran Semester :modelData.semester_detail.keterangan berhasil diubah'
+            'success' => 'Jadwal Tahun Ajaran :modelData.tahun_ajaran Semester :modelData.semester_detail.keterangan berhasil diubah'
         ];
         return $this->template->update($request, $rules, $message, $responseMessage);
     }
@@ -108,10 +107,10 @@ class PeminatController extends Controller
     public function destroy(Request $request)
     {
         $rules = [
-            'id' => ['required', 'exists:peminat,id,deleted_at,NULL']
+            'id' => ['required', 'exists:jadwal,id,deleted_at,NULL']
         ];
         $responseMessage = [
-            'success' => 'Peminat Tahun Ajaran :modelData.tahun_ajaran Semester :modelData.semester_detail.keterangan berhasil dihapus'
+            'success' => 'Jadwal Tahun Ajaran :modelData.tahun_ajaran Semester :modelData.semester_detail.keterangan berhasil dihapus'
         ];
         return $this->template->destroy($request, $rules, [], $responseMessage);
     }

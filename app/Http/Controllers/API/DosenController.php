@@ -6,6 +6,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Dosen as dosen;
+use App\Http\Controllers\TemplateController;
 use App\Rules\table_column;
 use Exception;
 use Illuminate\Support\Facades\Validator;
@@ -13,6 +14,13 @@ use Illuminate\Validation\Rule;
 
 class DosenController extends Controller
 {
+    protected $template = null;
+    public function __construct()
+    {
+        $model = new dosen();
+        $this->template = new TemplateController($model, 'dosen');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -24,24 +32,7 @@ class DosenController extends Controller
         if (count($request->all()) > 0) {
             return $this->show($request);
         }
-
-        try {
-            $dosen = dosen::all();
-            $response = [
-                'status' => 200,
-                'data' => $dosen->toArray()
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        return $this->template->index($request);
     }
 
     /**
@@ -56,39 +47,10 @@ class DosenController extends Controller
             'kode_dosen' => ['required', 'unique:dosen,kode_dosen,NULL,id,deleted_at,NULL'],
             'nama_dosen' => ['required'],
         ];
-
-        $validator = Validator::make($request->all(), $rules);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-        $insertToDB = [
-            'kode_dosen' => $request->kode_dosen,
-            'nama_dosen' => $request->nama_dosen,
-            'created_at' => now(),
-            'updated_at' => now()
+        $responseMessage = [
+            'success' => 'Dosen :modelData.nama_dosen ( :modelData.kode_dosen ) berhasil ditambahkan'
         ];
-        try {
-            dosen::insert($insertToDB);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
-
-        $response = [
-            'status' => 200,
-            'message' => 'Dosen ' . $request->nama_dosen . ' (' . $request->kode_dosen . ') Berhasil ditambahkan'
-        ];
-        return response()->json($response, $response['status']);
+        return $this->template->store($request, $rules, [], $responseMessage);
     }
 
     /**
@@ -99,41 +61,7 @@ class DosenController extends Controller
      */
     public function show(Request $request)
     {
-        $table_column = collect($request->all())->keys()->toArray();
-        $rules = [
-            'column' => ['required', new table_column('dosen')]
-        ];
-        $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-        $whereCond = collect($request->all());
-        $whereCond = $whereCond->map(function ($item) {
-            return $item;
-        });
-
-        try {
-            $dosen = dosen::where($request->all())->get();
-            $response = [
-                'status' => 200,
-                'data' => $dosen
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        return $this->template->show($request);
     }
 
     /**
@@ -153,46 +81,10 @@ class DosenController extends Controller
         $message = [
             'kode_dosen.exists' => 'sorry, we cannot find what are you looking for.'
         ];
-        $validator = Validator::make($request->all(), $rules, $message);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-        // key accepted
-        $accepted_key = ['kode_dosen', 'nama_dosen'];
-        $update = collect($request->all())->only($accepted_key);
-
-        try {
-            $dosen = dosen::find($request->id);
-            $update->map(function ($item, $key) use ($dosen) {
-                $dosen[$key] = $item;
-            });
-            $dosen->save();
-
-            $response = [
-                'status' => 200,
-                'message' => 'Dosen ' . $dosen->nama_dosen . ' (' . $dosen->kode_dosen . ') berhasil diubah'
-            ];
-
-            if (!$dosen->getChanges()) {
-                $response['message'] = "Tidak ada perubahan";
-            }
-
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        $responseMessage = [
+            'success' => "Dosen :modelData.nama_dosen ( :modelData.kode_dosen ) berhasil diubah"
+        ];
+        return $this->template->update($request, $rules, $message, $responseMessage);
     }
 
     /**
@@ -210,33 +102,9 @@ class DosenController extends Controller
         $message = [
             'id.exists' => 'sorry, we cannot find what are you looking for.'
         ];
-        $validator = Validator::make($request->all(), $rules, $message);
-        if ($validator->fails()) {
-            $response = [
-                'status' => 400,
-                'message' => $validator->errors()
-            ];
-            return response()->json($response, $response['status']);
-        }
-
-        try {
-            $dosen = dosen::find($request->id);
-            $dosen->delete();
-
-            $response = [
-                'status' => 200,
-                'message' => 'Dosen ' . $dosen->nama_dosen . ' (' . $dosen->kode_dosen . ') berhasil dihapus.'
-            ];
-            return response()->json($response, $response['status']);
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => "Internal Server Error"
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        $responseMessage = [
+            'success' => "Dosen :modelData.nama_dosen ( :modelData.kode_dosen ) berhasil dihapus"
+        ];
+        return $this->template->destroy($request, $rules, $message, $responseMessage);
     }
 }

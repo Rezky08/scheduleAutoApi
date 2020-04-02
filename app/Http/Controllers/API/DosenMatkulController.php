@@ -2,22 +2,20 @@
 
 namespace App\Http\Controllers\API;
 
+use App\DosenMatakuliah;
+use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\TemplateController;
-use App\ProcessItem;
-use Exception;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
+use App\Rules\unique_with;
 
-class ProcessItemController extends Controller
+class DosenMatkulController extends Controller
 {
     protected $template = null;
     protected $model = null;
     public function __construct()
     {
-        $this->model = new ProcessItem();
-        $this->template = new TemplateController($this->model, 'process_item');
+        $this->model = new DosenMatakuliah();
+        $this->template = new TemplateController($this->model, 'dosen_mata_kuliah');
     }
 
     /**
@@ -27,7 +25,6 @@ class ProcessItemController extends Controller
      */
     public function index(Request $request)
     {
-        // check apakah ada request
         if (count($request->all()) > 0) {
             return $this->show($request);
         }
@@ -42,12 +39,15 @@ class ProcessItemController extends Controller
      */
     public function store(Request $request)
     {
+        $message = [
+            'kode_dosen.kode_matkul.unique' => 'Kode Dosen and Kode Matkul must be unique'
+        ];
         $rules = [
-            'process_name' => ['required', 'unique:process_item,process_name,NULL,id,deleted_at,NULL'],
-            'description' => ['sometimes', 'required']
+            'kode_dosen' => ['required', 'exists:dosen,kode_dosen,deleted_at,NULL'],
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL', new unique_with('dosen_mata_kuliah,kode_dosen,' . $request->kode_dosen . ',kode_matkul,' . $request->kode_matkul . ',deleted_at,NULL', null, $message['kode_dosen.kode_matkul.unique'])]
         ];
         $responseMessage = [
-            'success' => "Process :modelData.process_name has been added"
+            'success' => "berhasil menambahkan :modelData.dosen.nama_dosen mengampu Mata Kuliah :modelData.matkul.nama_matkul"
         ];
         return $this->template->store($request, $rules, [], $responseMessage);
     }
@@ -72,13 +72,16 @@ class ProcessItemController extends Controller
      */
     public function update(Request $request)
     {
+        $message = [
+            'kode_dosen.kode_matkul.unique' => 'Kode Dosen and Kode Matkul must be unique'
+        ];
         $rules = [
-            'id' => ['required', 'exists:process_item,id,deleted_at,NULL'],
-            'process_name' => ['required', Rule::unique('process_item', 'process_name')->ignore($request->id, 'id')],
-            'description' => ['sometimes', 'required']
+            'id' => ['required', 'exists:dosen_mata_kuliah,id,deleted_at,NULL'],
+            'kode_dosen' => ['required', 'exists:dosen,kode_dosen,deleted_at,NULL'],
+            'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL', new unique_with('dosen_mata_kuliah,kode_dosen,' . $request->kode_dosen . ',kode_matkul,' . $request->kode_matkul . ',deleted_at,NULL', 'id,' . $request->id, $message['kode_dosen.kode_matkul.unique'])]
         ];
         $responseMessage = [
-            'success' => "Process :modelData.process_name has been updated"
+            'success' => "berhasil mengubah :modelData.dosen.nama_dosen mengampu Mata Kuliah :modelData.matkul.nama_matkul"
         ];
         return $this->template->update($request, $rules, [], $responseMessage);
     }
@@ -92,10 +95,10 @@ class ProcessItemController extends Controller
     public function destroy(Request $request)
     {
         $rules = [
-            'id' => ['required', 'exists:process_item,id,deleted_at,NULL'],
+            'id' => ['required', 'exists:dosen_mata_kuliah,id,deleted_at,NULL'],
         ];
         $responseMessage = [
-            'success' => "Process :modelData.process_name has been deleted"
+            'success' => "berhasil menghapus :modelData.dosen.nama_dosen mengampu Mata Kuliah :modelData.matkul.nama_matkul"
         ];
         return $this->template->destroy($request, $rules, [], $responseMessage);
     }
