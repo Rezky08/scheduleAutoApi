@@ -17,4 +17,8 @@ class PeminatDetail extends Model
     {
         return $this->BelongsTo(Matakuliah::class, 'kode_matkul', 'kode_matkul');
     }
+    public function peminat()
+    {
+        return $this->belongsTo(Peminat::class, 'peminat_id', 'id');
+    }
 }
