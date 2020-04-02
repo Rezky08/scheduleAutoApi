@@ -62,10 +62,35 @@ Route::delete('/dosen', 'API\DosenController@destroy');
 Route::get('/kelompok_dosen', 'API\KelompokDosenController@index');
 Route::post('/kelompok_dosen', 'API\KelompokDosenController@store');
 Route::put('/kelompok_dosen', 'API\KelompokDosenController@update');
-Route::delete('/kelompok_dosen', 'API\KelompokDosenDetailController@destroy');
+Route::delete('/kelompok_dosen', 'API\KelompokDosenController@destroy');
+
+Route::get('/kelompok_dosen/detail', 'API\KelompokDosenDetailController@index');
+Route::post('/kelompok_dosen/detail', 'API\KelompokDosenDetailController@store');
+Route::put('/kelompok_dosen/detail', 'API\KelompokDosenDetailController@update');
+Route::delete('/kelompok_dosen/detail', 'API\KelompokDosenDetailController@destroy');
+
+Route::get('/dosen_matkul', 'API\DosenMatkulController@index');
+Route::post('/dosen_matkul', 'API\DosenMatkulController@store');
+Route::put('/dosen_matkul', 'API\DosenMatkulController@update');
+Route::delete('/dosen_matkul', 'API\DosenMatkulController@destroy');
+
 
 Route::get('/python', 'API\PythonEngineController@index');
 Route::post('/python', 'API\PythonEngineController@store');
 
-Route::post('/process', 'API\ProcessItemController@store');
-Route::get('/process', 'API\ProcessItemController@index');
+Route::post('/process/item', 'API\ProcessItemController@store');
+Route::get('/process/item', 'API\ProcessItemController@index');
+Route::put('/process/item', 'API\ProcessItemController@update');
+Route::delete('/process/item', 'API\ProcessItemController@destroy');
+
+
+
+Route::get('/jadwal', 'API\JadwalController@index');
+Route::post('/jadwal', 'API\JadwalController@store');
+Route::put('/jadwal', 'API\JadwalController@update');
+Route::delete('/jadwal', 'API\JadwalController@destroy');
+
+Route::get('/jadwal/detail', 'API\JadwalDetailController@index');
+Route::post('/jadwal/detail', 'API\JadwalDetailController@store');
+Route::put('/jadwal/detail', 'API\JadwalDetailController@update');
+Route::delete('/jadwal/detail', 'API\JadwalDetailController@destroy');
