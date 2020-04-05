@@ -3,19 +3,32 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\TemplateController;
 use App\ProcessLog;
 use Illuminate\Http\Request;
 
 class ProcessLogController extends Controller
 {
+    protected $template = null;
+    protected $model = null;
+    public function __construct()
+    {
+        $this->model = new ProcessLog();
+        $this->template = new TemplateController($this->model, 'process_log');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        // check apakah ada request
+        if (count($request->all()) > 0) {
+            return $this->show($request);
+        }
+        return $this->template->index($request);
     }
 
     /**
@@ -26,7 +39,11 @@ class ProcessLogController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $rules = [
+            'process_item_id' => ['required', 'exists:process_item,id,deleted_at,NULL'],
+            'item_key' => ['required', 'numeric'],
+        ];
+        return $this->template->store($request, $rules);
     }
 
     /**
@@ -35,9 +52,9 @@ class ProcessLogController extends Controller
      * @param  \App\ProcessLog  $processLog
      * @return \Illuminate\Http\Response
      */
-    public function show(ProcessLog $processLog)
+    public function show(Request $request)
     {
-        //
+        return $this->template->show($request);
     }
 
     /**
@@ -47,9 +64,14 @@ class ProcessLogController extends Controller
      * @param  \App\ProcessLog  $processLog
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, ProcessLog $processLog)
+    public function update(Request $request)
     {
-        //
+        $rules = [
+            'id' => ['required', 'exists:process_log,id,deleted_at,NULL'],
+            'process_item_id' => ['required', 'exists:process_item,id,deleted_at,NULL'],
+            'item_key' => ['required', 'numeric'],
+        ];
+        return $this->template->update($request, $rules);
     }
 
     /**
@@ -58,8 +80,11 @@ class ProcessLogController extends Controller
      * @param  \App\ProcessLog  $processLog
      * @return \Illuminate\Http\Response
      */
-    public function destroy(ProcessLog $processLog)
+    public function destroy(Request $request)
     {
-        //
+        $rules = [
+            'id' => ['required', 'exists:process_log,id,deleted_at,NULL']
+        ];
+        return $this->template->delete($request, $rules);
     }
 }

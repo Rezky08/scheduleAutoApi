@@ -49,6 +49,7 @@ class KelompokDosenDetailController extends Controller
             'kelompok_dosen_id' => ['required', 'exists:kelompok_dosen,id,deleted_at,NULL'],
             'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL'],
             'kelompok' => ['required', 'max:5', new unique_with('kelompok_dosen_detail,kelompok_dosen_id,' . $request->kelompok_dosen_id . ',kode_matkul,' . $request->kode_matkul . ',kelompok,' . $request->kelompok . ',deleted_at,NULL', null, $message['kelompok.unique_with'])],
+            'kapasitas' => ['required', 'numeric'],
             'kode_dosen' => ['required', 'exists:dosen,kode_dosen,deleted_at,NULL']
         ];
         $responseMessage = [
@@ -81,6 +82,7 @@ class KelompokDosenDetailController extends Controller
             'id' => ['required', 'exists:kelompok_dosen_detail,id,deleted_at,NULL'],
             'kelompok_dosen_id' => ['required', 'exists:kelompok_dosen,id,deleted_at,NULL'],
             'kode_matkul' => ['required', 'exists:mata_kuliah,kode_matkul,deleted_at,NULL'],
+            'kapasitas' => ['required', 'numeric'],
             'kelompok' => ['required', 'max:5', new unique_with('kelompok_dosen_detail,kelompok_dosen_id,' . $request->kelompok_dosen_id . ',kode_matkul,' . $request->kode_matkul . ',kelompok,' . $request->kelompok . ',deleted_at,NULL', 'id,' . $request->id)],
             'kode_dosen' => ['required', 'exists:dosen,kode_dosen,deleted_at,NULL'],
         ];

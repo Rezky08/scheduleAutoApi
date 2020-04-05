@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\TemplateController;
 use App\Peminat;
 use App\PeminatDetail;
-use App\Rules\table_column;
 use App\Rules\unique_with;
 use Exception;
 use Illuminate\Http\Request;
