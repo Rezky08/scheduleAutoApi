@@ -13,6 +13,9 @@ class PeminatDetail extends Model
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
     protected $fillable = ['kode_matkul', 'jumlah_peminat'];
     public $timestamps = true;
+    protected $casts = [
+        'jumlah_peminat' => 'integer'
+    ];
     public function mata_kuliah()
     {
         return $this->BelongsTo(Matakuliah::class, 'kode_matkul', 'kode_matkul');

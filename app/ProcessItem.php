@@ -12,4 +12,17 @@ class ProcessItem extends Model
     protected $dates = ['deleted_at'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
+    public $relatedModel = [
+        'update' => [
+            [ProcessLog::class, 'process_item_id', 'id']
+        ],
+        'delete' => [
+            'process_log',
+        ]
+    ];
+
+    public function process_log()
+    {
+        return $this->hasMany(ProcessLog::class, 'process_item_id', 'id');
+    }
 }

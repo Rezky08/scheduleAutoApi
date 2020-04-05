@@ -12,4 +12,22 @@ class ProcessLog extends Model
     protected $dates = ['deleted_at'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
     public $timestamps = true;
+    public $relatedModel = [
+        'update' => [
+            [ProcessLogDetail::class, 'process_log_id', 'id'],
+            [AlgenResultLog::class, 'process_log_id', 'id']
+        ],
+        'delete' => [
+            'detail', 'algen_result'
+        ]
+    ];
+
+    public function detail()
+    {
+        return $this->hasMany(ProcessLogDetail::class, 'process_log_id', 'id');
+    }
+    public function algen_result()
+    {
+        return $this->hasMany(AlgenResultLog::class, 'process_log_id', 'id');
+    }
 }
