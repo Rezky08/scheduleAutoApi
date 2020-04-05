@@ -94,3 +94,6 @@ Route::get('/jadwal/detail', 'API\JadwalDetailController@index');
 Route::post('/jadwal/detail', 'API\JadwalDetailController@store');
 Route::put('/jadwal/detail', 'API\JadwalDetailController@update');
 Route::delete('/jadwal/detail', 'API\JadwalDetailController@destroy');
+
+Route::post('/python/kelompok_dosen', 'API\PythonEngineController@storeKelompokDosen');
+Route::post('/python/jadwal', 'API\PythonEngineController@storeJadwal');
