@@ -36,6 +36,7 @@ class KelompokDosenResultListener
     {
         $kelompok_dosen_results = json_decode($event->request['results']);
         $process = ProcessLog::find($event->request['process_log_id']);
+        dd($process);
         $process_log_detail_controller = new ProcessLogDetailController();
         $kelompok_dosen_detail_controller = new KelompokDosenDetailController();
 
