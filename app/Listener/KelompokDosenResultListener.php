@@ -14,7 +14,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Http\Request;
 use Exception;
 
-class KelompokDosenResultListener
+class KelompokDosenResultListener implements ShouldQueue
 {
     /**
      * Create the event listener.
