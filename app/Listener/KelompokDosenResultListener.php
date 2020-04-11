@@ -57,6 +57,7 @@ class KelompokDosenResultListener implements ShouldQueue
                 $request->setMethod('POST');
                 $request->request->add($insertToProcessLogDetail);
                 $process_log_detail_controller->store($request);
+                dd($e->getMessage());
                 return $e->getMessage();
             }
 
@@ -72,6 +73,7 @@ class KelompokDosenResultListener implements ShouldQueue
                 $request->request->add($insertToKelompokDosenDetail);
                 $response = $kelompok_dosen_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
+                    dd($response);
                     return $response;
                 }
             }
