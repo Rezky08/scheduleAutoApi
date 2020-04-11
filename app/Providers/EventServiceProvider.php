@@ -21,6 +21,9 @@ class EventServiceProvider extends ServiceProvider
         'App\Event\AlgenKelompokDosenProcess' => [
             'App\Listener\AlgenKelompokDosenListener'
         ],
+        'App\Event\CatchKelompokDosenResult' => [
+            'App\Listener\KelompokDosenResultListener'
+        ],
         'App\Event\GetMataKuliahKelompok' => [
             'App\Listener\GetMataKuliahKelompokListener'
         ],

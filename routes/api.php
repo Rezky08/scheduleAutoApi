@@ -97,5 +97,4 @@ Route::delete('/jadwal/detail', 'API\JadwalDetailController@destroy');
 
 Route::post('/python/kelompok_dosen', 'API\PythonEngineController@storeKelompokDosen');
 Route::post('/python/kelompok_dosen/result', 'API\PythonEngineController@storeKelompokDosenResult');
-
 Route::post('/python/jadwal', 'API\PythonEngineController@storeJadwal');

@@ -6,6 +6,7 @@ use App\Event\AlgenKelompokDosenProcess;
 use App\Http\Controllers\API\AlgenResultLogController;
 use App\Http\Controllers\API\KelompokDosenController;
 use App\Http\Controllers\API\KelompokDosenDetailController;
+use App\Helpers\Host;
 use App\KelompokDosen;
 use App\ProcessLogDetail;
 use Exception;
@@ -14,7 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 
-class AlgenKelompokDosenListener implements ShouldQueue
+class AlgenKelompokDosenListener
 {
 
     public $tries = 5;
@@ -56,9 +57,12 @@ class AlgenKelompokDosenListener implements ShouldQueue
         ];
         $params = $event->config;
         $form_params += $params;
+        $form_params['process_log_id'] = $event->process->id;
 
         $client = new Client();
-        $reqAsync = $client->requestAsync('POST', 'http://localhost:5000/dosen', ['json' => $form_params]);
+        $host = new Host();
+        $url= $host->host('python_engine').'dosen';
+        $reqAsync = $client->requestAsync('POST', $url , ['json' => $form_params]+$event->headers);
 
 
         // add log detail
@@ -98,72 +102,5 @@ class AlgenKelompokDosenListener implements ShouldQueue
         $result = $response->getBody()->getContents();
         // dapat kelompok dosen
         $kelompok_dosen = json_decode($result);
-        $kelompok_dosen = $kelompok_dosen->results;
-
-        foreach ($kelompok_dosen as $key => $item) {
-
-            // insert kelompok dosen
-            try {
-                $insertToDB = [
-                    'peminat_id' => $event->peminat->id,
-                ];
-                $request = new Request();
-                $request->setMethod('POST');
-                $request->request->add($insertToDB);
-                $kelompokDosenController = new KelompokDosenController();
-                $result = $kelompokDosenController->store($request);
-                if ($result->getStatusCode() != 200) {
-                    return $result;
-                }
-
-                $kelompok_dosen_model = KelompokDosen::orderBy('id', 'desc')->first();
-
-                // insert algen result
-                $insertToDB = [
-                    'process_log_id' => $event->process->id,
-                    'result_key' => $kelompok_dosen_model->id,
-                    'fit_score' => $item->fit_score * 100
-                ];
-                $request = new Request();
-                $request->setMethod('POST');
-                $request->request->add($insertToDB);
-
-                $algenResult = new AlgenResultLogController();
-                $result = $algenResult->store($request);
-                if ($result->getStatusCode() != 200) {
-                    return $result;
-                }
-            } catch (Exception $e) {
-                $insertToDB = [
-                    'process_log_id' => $event->process->id,
-                    'description' => "Gagal Menambahkan Mata Kuliah Kelompok Dosen" . $e->getMessage(),
-                    'created_at' => new \DateTime
-                ];
-                ProcessLogDetail::insert($insertToDB);
-            }
-
-            // insert kelompok dosen detail
-            foreach ($item->data as $key => $kelompok_dosen_detail) {
-                try {
-                    $insertToDB = collect($kelompok_dosen_detail)->toArray();
-                    $insertToDB['kelompok_dosen_id'] = $kelompok_dosen_model->id;
-                    $request = new Request();
-                    $request->setMethod('POST');
-                    $request->request->add($insertToDB);
-                    $kelompokDosenDetailController = new KelompokDosenDetailController();
-                    $result = $kelompokDosenDetailController->store($request);
-                    if ($result->getStatusCode() != 200) {
-                        return $result;
-                    }
-                } catch (Exception $e) {
-                    $insertToDB = [
-                        'process_log_id' => $event->process->id,
-                        'description' => "Gagal Menambahkan Mata Kuliah Kelompok Dosen" . $e->getMessage(),
-                        'created_at' => new \DateTime
-                    ];
-                    ProcessLogDetail::insert($insertToDB);
-                }
-            }
-        }
     }
 }

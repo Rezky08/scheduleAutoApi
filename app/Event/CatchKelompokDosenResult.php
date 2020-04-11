@@ -2,8 +2,6 @@
 
 namespace App\Event;
 
-use App\Peminat;
-use App\ProcessLog;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -12,32 +10,19 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class GetMataKuliahKelompok
+class CatchKelompokDosenResult
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $process;
-    public $peminat;
-    public $config;
-    public $headers;
+    public $request;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct(ProcessLog $process, Peminat $peminat, $config)
+    public function __construct($request)
     {
-        foreach ($config as $key => $value) {
-            $config[$key] = (int) $value;
-        }
-        $this->process = $process;
-        $this->peminat = $peminat;
-        $this->config = $config;
-        $this->headers = [
-            'headers'=>[
-                'Host'=>'server.python'
-            ]
-        ];
+        $this->request = $request;
     }
 
     /**

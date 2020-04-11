@@ -7,6 +7,7 @@ use App\ProcessLogDetail;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
+use App\Helpers\Host;
 
 class GetMataKuliahKelompokListener
 {
@@ -46,7 +47,9 @@ class GetMataKuliahKelompokListener
 
         // send to flask untuk membagi kelompok
         $client = new Client();
-        $reqAsync = $client->requestAsync('POST', 'http://localhost:5000/kelompok', ['json' => $form_params]);
+        $host = new Host();
+        $url = $host->host('python_engine').'kelompok';
+        $reqAsync = $client->requestAsync('POST',$url , ['json' => $form_params]+$event->headers);
 
         // add log detail
         $insertToDB = [

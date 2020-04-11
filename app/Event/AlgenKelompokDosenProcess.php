@@ -20,6 +20,7 @@ class AlgenKelompokDosenProcess
     public $process;
     public $config;
     public $kelompok_matkul;
+    public $headers;
     /**
      * Create a new event instance.
      *
@@ -38,6 +39,11 @@ class AlgenKelompokDosenProcess
         $this->peminat = $peminat;
         $this->config = $config;
         $this->kelompok_matkul = $kelompok_matkul;
+        $this->headers = [
+            'headers'=>[
+                'Host'=>'server.python'
+            ]
+        ];
     }
 
     /**

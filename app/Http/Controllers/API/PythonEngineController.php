@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Event\AlgenKelompokDosenProcess;
 use App\Event\AlgenProcess;
+use App\Event\CatchKelompokDosenResult;
 use App\Event\GetMataKuliahKelompok;
 use App\Hari;
 use App\Helpers\Host;
@@ -144,6 +145,16 @@ class PythonEngineController extends Controller
         ];
         event(new AlgenKelompokDosenProcess($process, $peminat, $config, $kelompok_matkul));
 
+        $response = [
+            'status' => 200,
+            'message' => "Process Already Running"
+        ];
+        return response()->json($response, $response['status']);
+    }
+
+    public function storeKelompokDosenResult(Request $request)
+    {
+        event(new CatchKelompokDosenResult($request->all()));
         $response = [
             'status' => 200,
             'message' => "Process Already Running"
