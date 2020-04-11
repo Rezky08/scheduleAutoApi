@@ -61,8 +61,8 @@ class AlgenKelompokDosenListener
 
         $client = new Client();
         $host = new Host();
-        $url= $host->host('python_engine').'dosen';
-        $reqAsync = $client->requestAsync('POST', $url , ['json' => $form_params]+$event->headers);
+        $url = $host->host('python_engine') . 'dosen';
+        $reqAsync = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
 
 
         // add log detail
