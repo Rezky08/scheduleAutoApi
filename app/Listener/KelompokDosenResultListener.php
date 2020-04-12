@@ -5,6 +5,7 @@ namespace App\Listener;
 use App\Event\CatchKelompokDosenResult;
 use App\Http\Controllers\API\KelompokDosenController;
 use App\Http\Controllers\API\KelompokDosenDetailController;
+use App\Http\Controllers\API\ProcessLogController;
 use App\Http\Controllers\API\ProcessLogDetailController;
 use App\KelompokDosen;
 use App\Peminat;
@@ -37,13 +38,22 @@ class KelompokDosenResultListener implements ShouldQueue
         $process_log_detail_controller = new ProcessLogDetailController();
         $process_log_controller = new ProcessLogController();
         // check result status
-        if ($event->request['status'] !=200) {
-            
-        }
 
         $kelompok_dosen_results = json_decode($event->request['results']);
         $process = ProcessLog::find($event->request['process_log_id']);
         $kelompok_dosen_detail_controller = new KelompokDosenDetailController();
+
+        if ($event->request['status'] != 200) {
+            $insertToProcessLogDetail = [
+                'process_log_id' => $process->id,
+                'description' => 'Gagal Algen Kelompok Dosen ' . $event->request['error']
+            ];
+            $request = new Request();
+            $request->setMethod('POST');
+            $request->request->add($insertToProcessLogDetail);
+            $response = $process_log_detail_controller->store($request);
+            return $response;
+        }
 
         foreach ($kelompok_dosen_results as $key => $kelompok_dosen) {
             $kelompok_dosen = collect($kelompok_dosen)->toArray();
@@ -65,28 +75,35 @@ class KelompokDosenResultListener implements ShouldQueue
                 $request->setMethod('POST');
                 $request->request->add($insertToProcessLogDetail);
                 $process_log_detail_controller->store($request);
-                dd($e->getMessage());
-                return $e->getMessage();
+                return false;
             }
-            
+
             // insert kelompok dosen detail
             foreach ($kelompok_dosen['data'] as $key => $item) {
                 $insertToKelompokDosenDetail = [
                     'kelompok_dosen_id' => $kelompok_dosen_id
                 ];
                 $item = collect($item)->toArray();
-                
+
                 $insertToKelompokDosenDetail += $item;
                 $request = new Request();
                 $request->setMethod('POST');
                 $request->request->add($insertToKelompokDosenDetail);
                 $response = $kelompok_dosen_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
-                    dd($response);
                     return $response;
                 }
             }
-
         }
+
+        $updateProcessLog = [
+            'id' => $process->id,
+            'status' => 1
+        ];
+        $request = new Request();
+        $request->setMethod('POST');
+        $request->request->add($updateProcessLog);
+        $response = $process_log_controller->update($request);
+        return $response;
     }
 }
