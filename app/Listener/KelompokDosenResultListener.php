@@ -34,13 +34,20 @@ class KelompokDosenResultListener implements ShouldQueue
      */
     public function handle(CatchKelompokDosenResult $event)
     {
+        $process_log_detail_controller = new ProcessLogDetailController();
+        $process_log_controller = new ProcessLogController();
+        // check result status
+        if ($event->request['status'] !=200) {
+            
+        }
+
         $kelompok_dosen_results = json_decode($event->request['results']);
         $process = ProcessLog::find($event->request['process_log_id']);
-        dd($process);
-        $process_log_detail_controller = new ProcessLogDetailController();
         $kelompok_dosen_detail_controller = new KelompokDosenDetailController();
 
         foreach ($kelompok_dosen_results as $key => $kelompok_dosen) {
+            $kelompok_dosen = collect($kelompok_dosen)->toArray();
+
             $insertToKelompokDosen = [
                 'peminat_id' => $process->item_key,
                 'created_at' => new \DateTime
@@ -61,13 +68,14 @@ class KelompokDosenResultListener implements ShouldQueue
                 dd($e->getMessage());
                 return $e->getMessage();
             }
-
+            
             // insert kelompok dosen detail
-            foreach ($kelompok_dosen as $key => $item) {
+            foreach ($kelompok_dosen['data'] as $key => $item) {
                 $insertToKelompokDosenDetail = [
                     'kelompok_dosen_id' => $kelompok_dosen_id
                 ];
                 $item = collect($item)->toArray();
+                
                 $insertToKelompokDosenDetail += $item;
                 $request = new Request();
                 $request->setMethod('POST');
@@ -78,6 +86,7 @@ class KelompokDosenResultListener implements ShouldQueue
                     return $response;
                 }
             }
+
         }
     }
 }
