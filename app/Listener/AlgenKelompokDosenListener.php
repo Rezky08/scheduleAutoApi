@@ -15,7 +15,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 
-class AlgenKelompokDosenListener
+class AlgenKelompokDosenListener implements ShouldQueue
 {
 
     public $tries = 5;
