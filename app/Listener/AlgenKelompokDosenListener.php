@@ -84,23 +84,25 @@ class AlgenKelompokDosenListener
         ProcessLogDetail::insert($insertToDB);
 
         // Get Result
-        $form_params = [
-            'celery_id' => $celery_id
-        ];
-        $url = $host->host('python_engine') . 'dosen/result';
-        $res = $client->request('GET', $url, ['json' => $form_params] + $event->headers);
-
-        if ($res->getStatusCode() != 200) {
-            $event->process->attempt += 1;
-            $event->process->save();
-            return false;
-        }
-
         while (true) {
+            $form_params = [
+                'celery_id' => $celery_id
+            ];
+            $url = $host->host('python_engine') . 'dosen/result';
+            $res = $client->request('GET', $url, ['json' => $form_params] + $event->headers);
+
+            if ($res->getStatusCode() != 200) {
+                $event->process->attempt += 1;
+                $event->process->save();
+                return false;
+            }
+
             $res = $res->getBody()->getContents();
             $res = json_decode($res);
             if ($res->status == "SUCCESS") {
                 return dd($res);
+            } else {
+                echo $res->status;
             }
         }
 
