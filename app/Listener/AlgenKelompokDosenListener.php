@@ -62,7 +62,16 @@ class AlgenKelompokDosenListener
         $client = new Client();
         $host = new Host();
         $url = $host->host('python_engine') . 'dosen';
-        $reqAsync = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
+        // get celery_id
+        $res = $client->request('POST', $url, ['json' => $form_params] + $event->headers);
+        if ($res->getStatusCode() != 200) {
+            $event->process->attempt += 1;
+            $event->process->save();
+            return false;
+        }
+        $res = $res->getBody()->getContents();
+        $res = json_decode($res);
+        $celery_id = $res->celery_id;
 
 
         // add log detail
@@ -74,8 +83,30 @@ class AlgenKelompokDosenListener
         ];
         ProcessLogDetail::insert($insertToDB);
 
-        // update process status to success
-        $event->process->status = 1;
+        // Get Result
+        $form_params = [
+            'celery_id' => $celery_id
+        ];
+        $url = $host->host('python_engine') . 'dosen/result';
+        $res = $client->request('GET', $url, ['json' => $form_params] + $event->headers);
+
+        if ($res->getStatusCode() != 200) {
+            $event->process->attempt += 1;
+            $event->process->save();
+            return false;
+        }
+
+        while (true) {
+            $res = $res->getBody()->getContents();
+            $res = json_decode($res);
+            if ($res->status == "SUCCESS") {
+                return dd($res);
+            }
+        }
+
+
+        // update process attempt
+        $event->process->attempt += 1;
         $event->process->save();
 
         $reqAsync->then(function ($response) use ($event) {
@@ -85,6 +116,10 @@ class AlgenKelompokDosenListener
                 'created_at' => new \DateTime
             ];
             ProcessLogDetail::insert($insertToDB);
+
+            // update process attempt
+            $event->process->status = 1;
+            $event->process->save();
 
             return $response;
         }, function ($response) use ($event) {
