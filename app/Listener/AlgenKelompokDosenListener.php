@@ -18,8 +18,6 @@ use Illuminate\Queue\InteractsWithQueue;
 class AlgenKelompokDosenListener implements ShouldQueue
 {
 
-    public $tries = 5;
-    public $retryAfter = 5;
     public $timeout = 0;
     /**
      * Create the event listener.
@@ -104,6 +102,8 @@ class AlgenKelompokDosenListener implements ShouldQueue
             } else {
                 echo $res->status;
             }
+
+            sleep();
         }
 
 
