@@ -68,8 +68,6 @@ class PythonEngineController extends Controller
      */
     public function storeKelompokDosen(Request $request)
     {
-        dd(Carbon::now());
-
 
         // Validation
         $rules = [

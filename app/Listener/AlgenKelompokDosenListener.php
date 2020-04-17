@@ -97,13 +97,12 @@ class AlgenKelompokDosenListener implements ShouldQueue
 
             $res = $res->getBody()->getContents();
             $res = json_decode($res);
-            if ($res->status == "SUCCESS") {
+            if ($res->status != "PENDING") {
                 return dd($res);
-            } else {
-                echo $res->status;
             }
+            echo "\n" . $res->status;
 
-            sleep();
+            sleep(10);
         }
 
 
