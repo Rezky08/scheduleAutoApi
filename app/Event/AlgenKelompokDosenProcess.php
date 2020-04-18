@@ -41,8 +41,8 @@ class AlgenKelompokDosenProcess
         $this->config = $config;
         $this->kelompok_matkul = $kelompok_matkul;
         $this->headers = [
-            'headers'=>[
-                'Host'=>'server.python'
+            'headers' => [
+                'Host' => 'server.python'
             ]
         ];
         $this->peminat_props = $config['peminat_props'];

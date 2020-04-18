@@ -3,6 +3,7 @@
 namespace App\Listener;
 
 use App\Event\AlgenKelompokDosenProcess;
+use App\Event\GetMataKuliahKelompok;
 use App\Http\Controllers\API\AlgenResultLogController;
 use App\Http\Controllers\API\KelompokDosenController;
 use App\Http\Controllers\API\KelompokDosenDetailController;
@@ -37,6 +38,11 @@ class AlgenKelompokDosenListener implements ShouldQueue
      */
     public function handle(AlgenKelompokDosenProcess $event)
     {
+        // get kelompok mata kuliah
+        $kelompok_matkul = event(new GetMataKuliahKelompok($event->process, $event->peminat, $event->peminat_props));
+        $kelompok_matkul = $kelompok_matkul[0];
+        dd($kelompok_matkul);
+
         // prepare for get dosen combination
         $dosen_matkul = $event->peminat->peminat_detail->mapWithKeys(function ($item) {
             $dosen_matkul = $item->mata_kuliah->dosen_matkul;
@@ -73,7 +79,6 @@ class AlgenKelompokDosenListener implements ShouldQueue
 
 
         // add log detail
-
         $insertToDB = [
             'process_log_id' => $event->process->id,
             'description' => "Mulai Algen Process Mata Kuliah Kelompok Dosen",
@@ -97,46 +102,30 @@ class AlgenKelompokDosenListener implements ShouldQueue
 
             $res = $res->getBody()->getContents();
             $res = json_decode($res);
-            if ($res->status != "PENDING") {
-                return dd($res);
+            if ($res->status == "SUCCESS") {
+                $insertToDB = [
+                    'process_log_id' => $event->process->id,
+                    'description' => "Berhasil Algen Process Mata Kuliah Kelompok Dosen",
+                    'created_at' => new \DateTime
+                ];
+                ProcessLogDetail::insert($insertToDB);
+                $kelompok_dosen_result = $res->result;
+            } elseif ($res->status != "PENDING") {
+                $insertToDB = [
+                    'process_log_id' => $event->process->id,
+                    'description' => "Berhasil Algen Process Mata Kuliah Kelompok Dosen",
+                    'created_at' => new \DateTime
+                ];
+                ProcessLogDetail::insert($insertToDB);
+                return false;
             }
-            echo "\n" . $res->status;
 
+            // retry delay
             sleep(10);
         }
 
-
         // update process attempt
-        $event->process->attempt += 1;
+        $event->process->status = 1;
         $event->process->save();
-
-        $reqAsync->then(function ($response) use ($event) {
-            $insertToDB = [
-                'process_log_id' => $event->process->id,
-                'description' => "Berhasil Algen Process Mata Kuliah Kelompok Dosen",
-                'created_at' => new \DateTime
-            ];
-            ProcessLogDetail::insert($insertToDB);
-
-            // update process attempt
-            $event->process->status = 1;
-            $event->process->save();
-
-            return $response;
-        }, function ($response) use ($event) {
-            $insertToDB = [
-                'process_log_id' => $event->process->id,
-                'description' => "Gagal Algen Process Mata Kuliah Kelompok Dosen Exception: " . $response->getMessage(),
-                'created_at' => new \DateTime
-            ];
-            ProcessLogDetail::insert($insertToDB);
-
-            return $response;
-        });
-
-        $response = $reqAsync->wait();
-        $result = $response->getBody()->getContents();
-        // dapat kelompok dosen
-        $kelompok_dosen = json_decode($result);
     }
 }
