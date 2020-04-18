@@ -42,7 +42,6 @@ class PythonEngineController extends Controller
         $rules = [
             'kelompok_dosen_id' => ['required', 'exists:kelompok_dosen,id,deleted_at,NULL'],
             // for algen
-            'max_kelompok' => ['required', 'numeric'],
             'crossover_rate' => ['required', 'between:0,100'],
             'mutation_rate' => ['required', 'between:0,100'],
             'num_generation' => ['required', 'numeric'],
