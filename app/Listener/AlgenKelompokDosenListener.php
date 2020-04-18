@@ -77,7 +77,9 @@ class AlgenKelompokDosenListener implements ShouldQueue
         if ($res->getStatusCode() != 200) {
             $event->process->attempt += 1;
             $event->process->save();
-            echo "\nGagal Send Process Dosen";
+            echo "Gagal Send Process Dosen";
+            return false;
+                    echo "\nGagal Send Process Dosen";
             return false;
         }
         $res = $res->getBody()->getContents();
@@ -106,8 +108,8 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 'celery_id' => $celery_id
             ];
             $url = $host->host('python_engine') . 'dosen/result';
-            $res = $client->request('GET', $url, ['json' => $form_params] + $event->headers);
-
+            $res = $client->requestAsync('GET', $url, ['json' => $form_params] + $event->headers);
+            $res = $res->wait();
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
                 $event->process->save();
@@ -152,15 +154,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
                     return $response;
                 }
                 echo "\nFailure";
-                return false;
-            }
-
-            // retry delay
-            sleep(10);
-        }
-
-        // update process attempt
-        $event->process->status = 1;
+t->process->status = 1;
         $event->process->save();
         echo ("Mulai insert kelompok");
         event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
