@@ -2,6 +2,8 @@
 
 namespace App\Event;
 
+use App\Http\Controllers\API\ProcessLogController;
+use App\Http\Controllers\API\ProcessLogDetailController;
 use App\Peminat;
 use App\ProcessLog;
 use Illuminate\Broadcasting\Channel;
@@ -20,6 +22,8 @@ class GetMataKuliahKelompok
     public $peminat;
     public $config;
     public $headers;
+    public $process_log_controller;
+    public $process_log_detail_controller;
     /**
      * Create a new event instance.
      *
@@ -34,10 +38,12 @@ class GetMataKuliahKelompok
         $this->peminat = $peminat;
         $this->config = $config;
         $this->headers = [
-            'headers'=>[
-                'Host'=>'server.python'
+            'headers' => [
+                'Host' => 'server.python'
             ]
         ];
+        $this->process_log_controller = new ProcessLogController();
+        $this->process_log_detail_controller = new ProcessLogDetailController();
     }
 
     /**

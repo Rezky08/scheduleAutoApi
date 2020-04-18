@@ -4,10 +4,12 @@ namespace App\Listener;
 
 use App\Event\AlgenKelompokDosenProcess;
 use App\Event\GetMataKuliahKelompok;
+use App\Event\StoreResultKelompokDosen;
 use App\Http\Controllers\API\AlgenResultLogController;
 use App\Http\Controllers\API\KelompokDosenController;
 use App\Http\Controllers\API\KelompokDosenDetailController;
 use App\Helpers\Host;
+use App\Http\Controllers\API\ProcessLogController;
 use App\KelompokDosen;
 use App\ProcessLogDetail;
 use Exception;
@@ -85,9 +87,14 @@ class AlgenKelompokDosenListener implements ShouldQueue
         $insertToDB = [
             'process_log_id' => $event->process->id,
             'description' => "Mulai Algen Process Mata Kuliah Kelompok Dosen",
-            'created_at' => new \DateTime
+            // 'created_at' => new \DateTime
         ];
-        ProcessLogDetail::insert($insertToDB);
+        $request = new Request();
+        $request->request->add($insertToDB);
+        $response = $event->process_log_detail_controller->store($request);
+        if ($response->getStatusCode() != 200) {
+            return $response;
+        }
 
         // Get Result
         while (true) {
@@ -106,20 +113,34 @@ class AlgenKelompokDosenListener implements ShouldQueue
             $res = $res->getBody()->getContents();
             $res = json_decode($res);
             if ($res->status == "SUCCESS") {
+                $kelompok_dosen_result = $res->result;
+
                 $insertToDB = [
                     'process_log_id' => $event->process->id,
                     'description' => "Berhasil Algen Process Mata Kuliah Kelompok Dosen",
-                    'created_at' => new \DateTime
+                    // 'created_at' => new \DateTime
                 ];
-                ProcessLogDetail::insert($insertToDB);
-                $kelompok_dosen_result = $res->result;
+                // ProcessLogDetail::insert($insertToDB);
+                $request = new Request();
+                $request->request->add($insertToDB);
+                $response = $event->process_log_detail_controller->store($request);
+                if ($response->getStatusCode() != 200) {
+                    return $response;
+                }
             } elseif ($res->status != "PENDING") {
                 $insertToDB = [
                     'process_log_id' => $event->process->id,
-                    'description' => "Berhasil Algen Process Mata Kuliah Kelompok Dosen",
-                    'created_at' => new \DateTime
+                    'description' => "Gagal Algen Process Mata Kuliah Kelompok Dosen",
+                    // 'created_at' => new \DateTime
                 ];
-                ProcessLogDetail::insert($insertToDB);
+                // ProcessLogDetail::insert($insertToDB);
+                $request = new Request();
+                $request->request->add($insertToDB);
+                $response = $event->process_log_detail_controller->store($request);
+                if ($response->getStatusCode() != 200) {
+                    return $response;
+                }
+
                 return false;
             }
 
@@ -130,5 +151,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
         // update process attempt
         $event->process->status = 1;
         $event->process->save();
+
+        event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
     }
 }

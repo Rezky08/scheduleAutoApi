@@ -8,6 +8,7 @@ use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use App\Helpers\Host;
+use Illuminate\Http\Request;
 
 class GetMataKuliahKelompokListener
 {
@@ -55,25 +56,44 @@ class GetMataKuliahKelompokListener
         $insertToDB = [
             'process_log_id' => $event->process->id,
             'description' => "Mulai Bagi Kelompok Mata Kuliah",
-            'created_at' => new \DateTime
+            // 'created_at' => new \DateTime
         ];
-        ProcessLogDetail::insert($insertToDB);
+        // ProcessLogDetail::insert($insertToDB);
+        $request = new Request();
+        $request->request->add($insertToDB);
+        $response = $event->process_log_detail_controller->store($request);
+        if ($response->getStatusCode() != 200) {
+            return $response;
+        }
 
         $reqAsync->then(function ($response) use ($event) {
             $insertToDB = [
                 'process_log_id' => $event->process->id,
                 'description' => "Berhasil Bagi Kelompok Mata Kuliah",
-                'created_at' => new \DateTime
+                // 'created_at' => new \DateTime
             ];
-            ProcessLogDetail::insert($insertToDB);
+            // ProcessLogDetail::insert($insertToDB);
+            $request = new Request();
+            $request->request->add($insertToDB);
+            $response = $event->process_log_detail_controller->store($request);
+            if ($response->getStatusCode() != 200) {
+                return $response;
+            }
+
             return $response;
         }, function ($response) use ($event) {
             $insertToDB = [
                 'process_log_id' => $event->process->id,
                 'description' => "Gagal Bagi Kelompok Mata Kuliah Exception: " . $response->getMessage(),
-                'created_at' => new \DateTime
+                // 'created_at' => new \DateTime
             ];
-            ProcessLogDetail::insert($insertToDB);
+            // ProcessLogDetail::insert($insertToDB);
+            $request = new Request();
+            $request->request->add($insertToDB);
+            $response = $event->process_log_detail_controller->store($request);
+            if ($response->getStatusCode() != 200) {
+                return $response;
+            }
 
             // add process attempt
             $event->process->attempt += 1;

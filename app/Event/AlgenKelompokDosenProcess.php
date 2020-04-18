@@ -2,6 +2,8 @@
 
 namespace App\Event;
 
+use App\Http\Controllers\API\ProcessLogController;
+use App\Http\Controllers\API\ProcessLogDetailController;
 use App\Peminat;
 use App\ProcessLog;
 use Illuminate\Broadcasting\Channel;
@@ -22,6 +24,8 @@ class AlgenKelompokDosenProcess
     public $kelompok_matkul;
     public $headers;
     public $peminat_props;
+    public $process_log_controller;
+    public $process_log_detail_controller;
     /**
      * Create a new event instance.
      *
@@ -44,6 +48,8 @@ class AlgenKelompokDosenProcess
                 'Host' => 'server.python'
             ]
         ];
+        $this->process_log_controller = new ProcessLogController();
+        $this->process_log_detail_controller = new ProcessLogDetailController();
         $this->peminat_props = $config['peminat_props'];
     }
 
