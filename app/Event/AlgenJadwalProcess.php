@@ -29,7 +29,7 @@ class AlgenJadwalProcess
      *
      * @return void
      */
-    public function __construct(ProcessLog $process, KelompokDosen $kelompokDosen, $config)
+    public function __construct(ProcessLog $process, $params, $config)
     {
         $config['rules']['max_kelompok'] = (int) $config['rules']['max_kelompok'];
         $config['num_generation'] = (int) $config['num_generation'];
