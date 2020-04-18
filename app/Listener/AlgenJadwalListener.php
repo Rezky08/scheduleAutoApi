@@ -6,6 +6,7 @@ use App\Event\AlgenJadwalProcess;
 use App\Helpers\Host;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 
 class AlgenJadwalListener
