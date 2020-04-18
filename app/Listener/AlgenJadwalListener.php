@@ -3,6 +3,8 @@
 namespace App\Listener;
 
 use App\Event\AlgenJadwalProcess;
+use App\Helpers\Host;
+use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
@@ -26,36 +28,8 @@ class AlgenJadwalListener
      */
     public function handle(AlgenJadwalProcess $event)
     {
-
-        // get kelompok mata kuliah
-        try {
-            $kelompok_matkul = event(new GetMataKuliahKelompok($event->process, $event->peminat, $event->peminat_props));
-            $event->kelompok_matkul = $kelompok_matkul[0];
-        } catch (Exception $e) {
-            echo $e->getMessage();
-            return false;
-        }
-
-        // prepare for get dosen combination
-        $dosen_matkul = $event->peminat->peminat_detail->mapWithKeys(function ($item) {
-            $dosen_matkul = $item->mata_kuliah->dosen_matkul;
-            return [$item->kode_matkul => $dosen_matkul->pluck('kode_dosen')->toArray()];
-        });
-        $dosen_matkul = [
-            'kode_matkul' => $dosen_matkul->keys()->toArray(),
-            'kode_dosen' => $dosen_matkul->values()->toArray()
-        ];
-
-        $form_params = [
-            'nn_params' => [
-                'mata_kuliah' => $event->kelompok_matkul,
-                'matkul_dosen' => $dosen_matkul
-            ]
-        ];
-        $params = $event->config;
-        $form_params += $params;
-        $form_params['process_log_id'] = $event->process->id;
-
+        $form_params = $event->params + $event->config;
+        dd($form_params);
         $client = new Client();
         $host = new Host();
         $url = $host->host('python_engine') . 'dosen';

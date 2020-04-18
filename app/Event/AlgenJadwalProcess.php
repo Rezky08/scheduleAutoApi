@@ -17,7 +17,7 @@ use Illuminate\Queue\SerializesModels;
 class AlgenJadwalProcess
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    public $kelompokDosen;
+    public $params;
     public $process;
     public $headers;
     public $config;
@@ -39,7 +39,7 @@ class AlgenJadwalProcess
         $config['timeout'] = (int) $config['timeout'];
 
         $this->process = $process;
-        $this->kelompokDosen = $kelompokDosen;
+        $this->params = $params;
         $this->config = $config;
         $this->headers = [
             'headers' => [

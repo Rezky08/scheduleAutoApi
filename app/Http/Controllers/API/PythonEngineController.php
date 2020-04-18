@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Event\AlgenJadwalProcess;
 use App\Event\AlgenKelompokDosenProcess;
 use App\Event\AlgenProcess;
 use App\Event\CatchKelompokDosenResult;
@@ -86,6 +87,31 @@ class PythonEngineController extends Controller
             ]
         ];
         $params += $combine;
+
+        $config = [
+            'num_generation' => $request->num_generation,
+            'num_population' => $request->num_population,
+            'crossover_rate' => $request->crossover_rate / 100,
+            'mutation_rate' => $request->mutation_rate / 100,
+            'timeout' => $request->timeout,
+        ];
+
+        $insertToDB = [
+            'process_item_id' => 2,
+            'item_key' => $request->kelompok_dosen_id,
+            'status' => 0,
+            'attempt' => 0,
+            'created_at' => new \Datetime
+        ];
+        $process_log_id = ProcessLog::insertGetId($insertToDB);
+        $process = ProcessLog::find($process_log_id);
+        event(new AlgenJadwalProcess($process, $params, $config));
+
+        $response = [
+            'status' => 200,
+            'message' => "Process Already Running"
+        ];
+        return response()->json($response, $response['status']);
     }
 
     /**
@@ -165,15 +191,6 @@ class PythonEngineController extends Controller
         return response()->json($response, $response['status']);
     }
 
-    public function storeKelompokDosenResult(Request $request)
-    {
-        event(new CatchKelompokDosenResult($request->all()));
-        $response = [
-            'status' => 200,
-            'message' => "Process Already Running"
-        ];
-        return response()->json($response, $response['status']);
-    }
 
     /**
      * Display the specified resource.
