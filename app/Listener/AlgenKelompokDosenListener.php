@@ -154,7 +154,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
                     return $response;
                 }
                 echo "\nFailure";
-t->process->status = 1;
+        $event->process->status = 1;
         $event->process->save();
         echo ("Mulai insert kelompok");
         event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
