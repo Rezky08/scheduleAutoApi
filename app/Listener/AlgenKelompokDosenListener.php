@@ -45,7 +45,8 @@ class AlgenKelompokDosenListener implements ShouldQueue
             $kelompok_matkul = event(new GetMataKuliahKelompok($event->process, $event->peminat, $event->peminat_props));
             $event->kelompok_matkul = $kelompok_matkul[0];
         } catch (Exception $e) {
-            return $e->getMessage();
+            echo $e->getMessage();
+            return false;
         }
 
         // prepare for get dosen combination
@@ -76,6 +77,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
         if ($res->getStatusCode() != 200) {
             $event->process->attempt += 1;
             $event->process->save();
+            echo "Gagal Send Process Dosen";
             return false;
         }
         $res = $res->getBody()->getContents();
@@ -90,9 +92,12 @@ class AlgenKelompokDosenListener implements ShouldQueue
             // 'created_at' => new \DateTime
         ];
         $request = new Request();
+        $request->setMethod("POST");
         $request->request->add($insertToDB);
         $response = $event->process_log_detail_controller->store($request);
         if ($response->getStatusCode() != 200) {
+            dd($response);
+            echo "Failed Write Log Detail";
             return $response;
         }
 
@@ -107,6 +112,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
                 $event->process->save();
+                echo "Gagal Get Result";
                 return false;
             }
 
@@ -127,6 +133,8 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 if ($response->getStatusCode() != 200) {
                     return $response;
                 }
+                echo "succcess";
+                break;
             } elseif ($res->status != "PENDING") {
                 $insertToDB = [
                     'process_log_id' => $event->process->id,
@@ -140,7 +148,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 if ($response->getStatusCode() != 200) {
                     return $response;
                 }
-
+                echo "Failure";
                 return false;
             }
 
@@ -151,7 +159,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
         // update process attempt
         $event->process->status = 1;
         $event->process->save();
-
+        echo("Mulai insert kelompok");
         event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
     }
 }
