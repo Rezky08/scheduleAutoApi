@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
 
-class AlgenJadwalListener
+class AlgenJadwalListener implements ShouldQueue
 {
     public $timeout = 0;
 
@@ -40,7 +40,7 @@ class AlgenJadwalListener
         if ($res->getStatusCode() != 200) {
             $event->process->attempt += 1;
             $event->process->save();
-            echo "Gagal Send Process Dosen";
+            echo "Gagal Send Process Jadwal";
             return false;
         }
         $res = $res->getBody()->getContents();
@@ -81,7 +81,7 @@ class AlgenJadwalListener
             $res = $res->getBody()->getContents();
             $res = json_decode($res);
             if ($res->status == "SUCCESS") {
-                $kelompok_dosen_result = $res->result;
+                $jadwal_result = $res->result;
 
                 $insertToDB = [
                     'process_log_id' => $event->process->id,
@@ -115,7 +115,6 @@ class AlgenJadwalListener
                 echo "Failure";
                 return false;
             }
-
             // retry delay
             sleep(10);
         }
@@ -124,6 +123,7 @@ class AlgenJadwalListener
         $event->process->status = 1;
         $event->process->save();
         echo ("Mulai insert jadwal");
+        dd($jadwal_result);
         // event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
     }
 }
