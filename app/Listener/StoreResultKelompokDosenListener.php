@@ -2,11 +2,11 @@
 
 namespace App\Listener;
 
-use App\Event\AlgenProcess;
+use App\Event\StoreResultKelompokDosen;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 
-class AlgenListener
+class StoreResultKelompokDosenListener
 {
     /**
      * Create the event listener.
@@ -21,11 +21,11 @@ class AlgenListener
     /**
      * Handle the event.
      *
-     * @param  AlgenProcess  $event
+     * @param  StoreResultKelompokDosen  $event
      * @return void
      */
-    public function handle(AlgenProcess $event)
+    public function handle(StoreResultKelompokDosen $event)
     {
-        return "Testing";
+        //
     }
 }

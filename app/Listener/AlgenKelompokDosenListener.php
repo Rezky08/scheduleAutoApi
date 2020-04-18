@@ -39,9 +39,12 @@ class AlgenKelompokDosenListener implements ShouldQueue
     public function handle(AlgenKelompokDosenProcess $event)
     {
         // get kelompok mata kuliah
-        $kelompok_matkul = event(new GetMataKuliahKelompok($event->process, $event->peminat, $event->peminat_props));
-        $event->kelompok_matkul = $kelompok_matkul[0];
-        dd($event->kelompok_matkul);
+        try {
+            $kelompok_matkul = event(new GetMataKuliahKelompok($event->process, $event->peminat, $event->peminat_props));
+            $event->kelompok_matkul = $kelompok_matkul[0];
+        } catch (Exception $e) {
+            return $e->getMessage();
+        }
 
         // prepare for get dosen combination
         $dosen_matkul = $event->peminat->peminat_detail->mapWithKeys(function ($item) {

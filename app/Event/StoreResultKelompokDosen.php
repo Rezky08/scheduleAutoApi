@@ -10,19 +10,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CatchKelompokDosenResult
+class StoreResultKelompokDosen
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $request;
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($request)
+    public function __construct()
     {
-        $this->request = $request;
+        //
     }
 
     /**
