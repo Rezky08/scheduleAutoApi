@@ -76,17 +76,16 @@ class PythonEngineController extends Controller
             })->toArray()
         ];
         $kelompok_dosen = KelompokDosen::find($request->kelompok_dosen_id);
-        $kelompok_dosen = $kelompok_dosen->detail->map(function ($item)
-        {
-            $item = collect($item)->except(['id','kelompok_dosen_id'])->toArray();
+        $kelompok_dosen = $kelompok_dosen->detail->map(function ($item) {
+            $item = collect($item)->except(['id', 'kelompok_dosen_id'])->toArray();
             return $item;
         })->toArray();
         $params = [
-            'nn_params'=>[
+            'nn_params' => [
                 'mata_kuliah' => $kelompok_dosen
             ]
         ];
-        $params+=$combine;
+        $params += $combine;
     }
 
     /**
