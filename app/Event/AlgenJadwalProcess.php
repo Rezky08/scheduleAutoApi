@@ -31,7 +31,6 @@ class AlgenJadwalProcess
      */
     public function __construct(ProcessLog $process, $params, $config)
     {
-        $config['rules']['max_kelompok'] = (int) $config['rules']['max_kelompok'];
         $config['num_generation'] = (int) $config['num_generation'];
         $config['num_population'] = (int) $config['num_population'];
         $config['crossover_rate'] = (float) $config['crossover_rate'];
