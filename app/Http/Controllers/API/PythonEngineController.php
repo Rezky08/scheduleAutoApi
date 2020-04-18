@@ -64,19 +64,17 @@ class PythonEngineController extends Controller
         $ruang = Ruang::all();
         $hari = Hari::all();
         $sesi = Sesi::all();
-        // combine [id_ruang,id_hari,id_sesi]
-        $combine = [];
-        $ruang->map(function ($ruang_item) use ($hari, $sesi, &$combine) {
-            $hari->map(function ($hari_item) use ($sesi, $ruang_item, &$combine) {
-                $sesi->map(function ($sesi_item) use ($ruang_item, $hari_item, &$combine) {
-                    $combine[] = [
-                        $ruang_item->id,
-                        $hari_item->id,
-                        $sesi_item->id
-                    ];
-                });
-            });
-        });
+
+        // combine [ruang,hari,sesi]
+        $combine=[
+            'ruang' => $ruang->pluck('nama_ruang')->toArray(),
+            'hari' => $hari->pluck('nama_hari')->toArray(),
+            'sesi' => $sesi->map(function ($item)
+            {
+                $item = collect($item)->only(['sesi_mulai','sesi_selesai'])->toArray();
+                return $item;
+            })->toArray()
+        ];
         dd($combine);
     }
 
