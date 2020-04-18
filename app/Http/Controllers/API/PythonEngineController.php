@@ -11,6 +11,7 @@ use App\Helpers\Host;
 use App\Http\Controllers\Controller;
 use App\Jadwal;
 use App\Jobs\PythonDosen;
+use App\KelompokDosen;
 use App\Krs;
 use App\Matakuliah;
 use App\Peminat;
@@ -66,15 +67,15 @@ class PythonEngineController extends Controller
         $sesi = Sesi::all();
 
         // combine [ruang,hari,sesi]
-        $combine=[
+        $combine = [
             'ruang' => $ruang->pluck('nama_ruang')->toArray(),
             'hari' => $hari->pluck('nama_hari')->toArray(),
-            'sesi' => $sesi->map(function ($item)
-            {
-                $item = collect($item)->only(['sesi_mulai','sesi_selesai'])->toArray();
+            'sesi' => $sesi->map(function ($item) {
+                $item = collect($item)->only(['sesi_mulai', 'sesi_selesai'])->toArray();
                 return $item;
             })->toArray()
         ];
+        $kelompok_dosen = KelompokDosen::find($request->kelompok_dosen_id);
         dd($combine);
     }
 
