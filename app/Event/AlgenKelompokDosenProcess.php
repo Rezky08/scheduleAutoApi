@@ -27,7 +27,7 @@ class AlgenKelompokDosenProcess
      *
      * @return void
      */
-    public function __construct(ProcessLog $process, Peminat $peminat, $config, $kelompok_matkul)
+    public function __construct(ProcessLog $process, Peminat $peminat, $config)
     {
         $config['rules']['max_kelompok'] = (int) $config['rules']['max_kelompok'];
         $config['num_generation'] = (int) $config['num_generation'];
@@ -39,7 +39,6 @@ class AlgenKelompokDosenProcess
         $this->process = $process;
         $this->peminat = $peminat;
         $this->config = $config;
-        $this->kelompok_matkul = $kelompok_matkul;
         $this->headers = [
             'headers' => [
                 'Host' => 'server.python'

@@ -144,7 +144,7 @@ class PythonEngineController extends Controller
             'timeout' => $request->timeout,
             'peminat_props' => $peminat_props
         ];
-        event(new AlgenKelompokDosenProcess($process, $peminat, $config, $kelompok_matkul));
+        event(new AlgenKelompokDosenProcess($process, $peminat, $config));
 
         $response = [
             'status' => 200,
