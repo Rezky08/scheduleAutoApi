@@ -11,6 +11,8 @@ use Illuminate\Queue\InteractsWithQueue;
 
 class AlgenJadwalListener
 {
+    public $timeout = 0;
+
     /**
      * Create the event listener.
      *
@@ -30,10 +32,9 @@ class AlgenJadwalListener
     public function handle(AlgenJadwalProcess $event)
     {
         $form_params = $event->params + $event->config;
-        dd($form_params);
         $client = new Client();
         $host = new Host();
-        $url = $host->host('python_engine') . 'dosen';
+        $url = $host->host('python_engine') . 'jadwal';
         // get celery_id
         $res = $client->request('POST', $url, ['json' => $form_params] + $event->headers);
         if ($res->getStatusCode() != 200) {
@@ -50,7 +51,7 @@ class AlgenJadwalListener
         // add log detail
         $insertToDB = [
             'process_log_id' => $event->process->id,
-            'description' => "Mulai Algen Process Mata Kuliah Kelompok Dosen",
+            'description' => "Mulai Algen Process Jadwal",
             // 'created_at' => new \DateTime
         ];
         $request = new Request();
@@ -58,7 +59,6 @@ class AlgenJadwalListener
         $request->request->add($insertToDB);
         $response = $event->process_log_detail_controller->store($request);
         if ($response->getStatusCode() != 200) {
-            dd($response);
             echo "Failed Write Log Detail";
             return $response;
         }
@@ -68,7 +68,7 @@ class AlgenJadwalListener
             $form_params = [
                 'celery_id' => $celery_id
             ];
-            $url = $host->host('python_engine') . 'dosen/result';
+            $url = $host->host('python_engine') . 'jadwal/result';
             $res = $client->request('GET', $url, ['json' => $form_params] + $event->headers);
 
             if ($res->getStatusCode() != 200) {
@@ -85,7 +85,7 @@ class AlgenJadwalListener
 
                 $insertToDB = [
                     'process_log_id' => $event->process->id,
-                    'description' => "Berhasil Algen Process Mata Kuliah Kelompok Dosen",
+                    'description' => "Berhasil Algen Process Jadwal",
                     // 'created_at' => new \DateTime
                 ];
                 // ProcessLogDetail::insert($insertToDB);
@@ -101,7 +101,7 @@ class AlgenJadwalListener
             } elseif ($res->status != "PENDING") {
                 $insertToDB = [
                     'process_log_id' => $event->process->id,
-                    'description' => "Gagal Algen Process Mata Kuliah Kelompok Dosen",
+                    'description' => "Gagal Algen Process Jadwal",
                     // 'created_at' => new \DateTime
                 ];
                 // ProcessLogDetail::insert($insertToDB);
@@ -123,7 +123,7 @@ class AlgenJadwalListener
         // update process attempt
         $event->process->status = 1;
         $event->process->save();
-        echo ("Mulai insert kelompok");
-        event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
+        echo ("Mulai insert jadwal");
+        // event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
     }
 }
