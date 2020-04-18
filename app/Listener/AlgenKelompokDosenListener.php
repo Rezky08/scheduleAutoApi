@@ -79,7 +79,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
             $event->process->save();
             echo "Gagal Send Process Dosen";
             return false;
-                    echo "\nGagal Send Process Dosen";
+            echo "\nGagal Send Process Dosen";
             return false;
         }
         $res = $res->getBody()->getContents();
@@ -154,6 +154,8 @@ class AlgenKelompokDosenListener implements ShouldQueue
                     return $response;
                 }
                 echo "\nFailure";
+            }
+        }
         $event->process->status = 1;
         $event->process->save();
         echo ("Mulai insert kelompok");
