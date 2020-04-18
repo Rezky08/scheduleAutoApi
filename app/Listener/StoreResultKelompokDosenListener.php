@@ -37,6 +37,7 @@ class StoreResultKelompokDosenListener implements ShouldQueue
         ];
         // ProcessLogDetail::insert($insertToDB);
         $request = new Request();
+        $request->setMethod("POST");
         $request->request->add($insertToDB);
         $response = $event->process_log_detail_controller->store($request);
         if ($response->getStatusCode() != 200) {
@@ -58,6 +59,7 @@ class StoreResultKelompokDosenListener implements ShouldQueue
                 'fit_score' => $result_item->fit_score
             ];
             $request = new Request();
+            $request->setMethod("POST");
             $request->request->add($insertToDB);
             $response = $event->algen_result_controller->store($request);
             if ($response->getStatusCode() != 200) {
@@ -68,6 +70,7 @@ class StoreResultKelompokDosenListener implements ShouldQueue
                 $data_item = collect($data_item)->toArray();
                 $data_item['kelompok_dosen_id'] = $kelompok_dosen_id;
                 $request = new Request();
+                $request->setMethod("POST");
                 $request->request->add($data_item);
                 $response = $kelompok_dosen_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
@@ -83,6 +86,7 @@ class StoreResultKelompokDosenListener implements ShouldQueue
         ];
         // ProcessLogDetail::insert($insertToDB);
         $request = new Request();
+        $request->setMethod("POST");
         $request->request->add($insertToDB);
         $response = $event->process_log_detail_controller->store($request);
         if ($response->getStatusCode() != 200) {

@@ -60,6 +60,7 @@ class GetMataKuliahKelompokListener
         ];
         // ProcessLogDetail::insert($insertToDB);
         $request = new Request();
+        $request->setMethod("POST");
         $request->request->add($insertToDB);
         $response = $event->process_log_detail_controller->store($request);
         if ($response->getStatusCode() != 200) {
@@ -74,6 +75,7 @@ class GetMataKuliahKelompokListener
             ];
             // ProcessLogDetail::insert($insertToDB);
             $request = new Request();
+            $request->setMethod("POST");
             $request->request->add($insertToDB);
             $response = $event->process_log_detail_controller->store($request);
             if ($response->getStatusCode() != 200) {
@@ -89,6 +91,7 @@ class GetMataKuliahKelompokListener
             ];
             // ProcessLogDetail::insert($insertToDB);
             $request = new Request();
+            $request->setMethod("POST");
             $request->request->add($insertToDB);
             $response = $event->process_log_detail_controller->store($request);
             if ($response->getStatusCode() != 200) {

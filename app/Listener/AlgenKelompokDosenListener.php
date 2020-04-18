@@ -128,6 +128,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 ];
                 // ProcessLogDetail::insert($insertToDB);
                 $request = new Request();
+                $request->setMethod("POST");
                 $request->request->add($insertToDB);
                 $response = $event->process_log_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
@@ -143,6 +144,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 ];
                 // ProcessLogDetail::insert($insertToDB);
                 $request = new Request();
+                $request->setMethod("POST");
                 $request->request->add($insertToDB);
                 $response = $event->process_log_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
@@ -159,7 +161,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
         // update process attempt
         $event->process->status = 1;
         $event->process->save();
-        echo("Mulai insert kelompok");
+        echo ("Mulai insert kelompok");
         event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
     }
 }
