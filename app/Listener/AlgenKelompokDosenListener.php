@@ -77,7 +77,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
         if ($res->getStatusCode() != 200) {
             $event->process->attempt += 1;
             $event->process->save();
-            echo "Gagal Send Process Dosen";
+            echo "\nGagal Send Process Dosen";
             return false;
         }
         $res = $res->getBody()->getContents();
@@ -96,8 +96,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
         $request->request->add($insertToDB);
         $response = $event->process_log_detail_controller->store($request);
         if ($response->getStatusCode() != 200) {
-            dd($response);
-            echo "Failed Write Log Detail";
+            echo "\nFailed Write Log Detail";
             return $response;
         }
 
@@ -112,7 +111,7 @@ class AlgenKelompokDosenListener implements ShouldQueue
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
                 $event->process->save();
-                echo "Gagal Get Result";
+                echo "\nGagal Get Result";
                 return false;
             }
 
@@ -132,9 +131,10 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 $request->request->add($insertToDB);
                 $response = $event->process_log_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
+                    echo "\nFailed Write Log Detail";
                     return $response;
                 }
-                echo "succcess";
+                echo "\nsucccess";
                 break;
             } elseif ($res->status != "PENDING") {
                 $insertToDB = [
@@ -148,9 +148,10 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 $request->request->add($insertToDB);
                 $response = $event->process_log_detail_controller->store($request);
                 if ($response->getStatusCode() != 200) {
+                    echo "\nFailed Write Log Detail";
                     return $response;
                 }
-                echo "Failure";
+                echo "\nFailure";
                 return false;
             }
 
