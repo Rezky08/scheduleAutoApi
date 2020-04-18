@@ -37,6 +37,27 @@ class PythonEngineController extends Controller
 
     public function storeJadwal(Request $request)
     {
+
+        // Validation
+        $rules = [
+            'kelompok_dosen_id' => ['required', 'exists:kelompok_dosen,id,deleted_at,NULL'],
+            // for algen
+            'max_kelompok' => ['required', 'numeric'],
+            'crossover_rate' => ['required', 'between:0,100'],
+            'mutation_rate' => ['required', 'between:0,100'],
+            'num_generation' => ['required', 'numeric'],
+            'num_population' => ['required', 'numeric'],
+            'timeout' => ['required', 'sometimes'],
+        ];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $response = [
+                'status' => 400,
+                'message' => $validator->errors()
+            ];
+            return response()->json($response, $response['status']);
+        }
+
         $request_casts = [];
         foreach ($request->all() as $key => $value) {
             $request_casts[$key] = (int) $value;
@@ -57,7 +78,7 @@ class PythonEngineController extends Controller
                 });
             });
         });
-        dd($ruang->count(), $hari->count(), $sesi->count(), $combine);
+        dd($combine);
     }
 
     /**
@@ -115,22 +136,6 @@ class PythonEngineController extends Controller
         $process_log_id = ProcessLog::insertGetId($insertToDB);
         $process = ProcessLog::find($process_log_id);
 
-        // try {
-        //     // get kelompok matkul
-        //     $kelompok_matkul = event(new GetMataKuliahKelompok($process, $peminat, $peminat_props));
-        //     $kelompok_matkul = $kelompok_matkul[0];
-        // } catch (Exception $e) {
-        //     $response = [
-        //         'status' => 500,
-        //         'message' => 'Internal Server Error'
-        //     ];
-        //     if (env('APP_DEBUG') == true) {
-        //         $response['message'] = $e->getMessage();
-        //     }
-        //     return response()->json($response, $response['status']);
-        // }
-
-        // get dosen
         $rules = [
             'max_kelompok' => $request->max_kelompok
         ];

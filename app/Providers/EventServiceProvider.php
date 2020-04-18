@@ -26,6 +26,12 @@ class EventServiceProvider extends ServiceProvider
         ],
         'App\Event\StoreResultKelompokDosen' => [
             'App\Listener\StoreResultKelompokDosenListener'
+        ],
+        'App\Event\AlgenJadwalProcess' => [
+            'App\Listener\AlgenJadwalListener'
+        ],
+        'App\Event\StoreResultJadwal' => [
+            'App\Listener\StoreResultJadwalListener'
         ]
     ];
 
