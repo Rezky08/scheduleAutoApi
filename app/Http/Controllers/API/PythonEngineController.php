@@ -115,20 +115,20 @@ class PythonEngineController extends Controller
         $process_log_id = ProcessLog::insertGetId($insertToDB);
         $process = ProcessLog::find($process_log_id);
 
-        try {
-            // get kelompok matkul
-            $kelompok_matkul = event(new GetMataKuliahKelompok($process, $peminat, $peminat_props));
-            $kelompok_matkul = $kelompok_matkul[0];
-        } catch (Exception $e) {
-            $response = [
-                'status' => 500,
-                'message' => 'Internal Server Error'
-            ];
-            if (env('APP_DEBUG') == true) {
-                $response['message'] = $e->getMessage();
-            }
-            return response()->json($response, $response['status']);
-        }
+        // try {
+        //     // get kelompok matkul
+        //     $kelompok_matkul = event(new GetMataKuliahKelompok($process, $peminat, $peminat_props));
+        //     $kelompok_matkul = $kelompok_matkul[0];
+        // } catch (Exception $e) {
+        //     $response = [
+        //         'status' => 500,
+        //         'message' => 'Internal Server Error'
+        //     ];
+        //     if (env('APP_DEBUG') == true) {
+        //         $response['message'] = $e->getMessage();
+        //     }
+        //     return response()->json($response, $response['status']);
+        // }
 
         // get dosen
         $rules = [
@@ -141,7 +141,8 @@ class PythonEngineController extends Controller
             'num_population' => $request->num_population,
             'crossover_rate' => $request->crossover_rate / 100,
             'mutation_rate' => $request->mutation_rate / 100,
-            'timeout' => $request->timeout
+            'timeout' => $request->timeout,
+            'peminat_props' => $peminat_props
         ];
         event(new AlgenKelompokDosenProcess($process, $peminat, $config, $kelompok_matkul));
 

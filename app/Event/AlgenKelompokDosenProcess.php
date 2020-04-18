@@ -21,6 +21,7 @@ class AlgenKelompokDosenProcess
     public $config;
     public $kelompok_matkul;
     public $headers;
+    public $peminat_props;
     /**
      * Create a new event instance.
      *
@@ -44,6 +45,7 @@ class AlgenKelompokDosenProcess
                 'Host'=>'server.python'
             ]
         ];
+        $this->peminat_props = $config['peminat_props'];
     }
 
     /**
