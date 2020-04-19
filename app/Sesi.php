@@ -11,8 +11,4 @@ class Sesi extends Model
     protected $table = 'sesi';
     protected $dates = ['deleted_at'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
-    protected $casts = [
-        'sesi_mulai' => 'timestamp',
-        'sesi_selesai' => 'timestamp'
-    ];
 }
