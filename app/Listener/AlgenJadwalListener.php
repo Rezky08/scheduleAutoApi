@@ -120,6 +120,7 @@ class AlgenJadwalListener implements ShouldQueue
                 echo "Failure";
                 return false;
             }
+            echo "\n".$res->status;
             // retry delay
             sleep(10);
         }
