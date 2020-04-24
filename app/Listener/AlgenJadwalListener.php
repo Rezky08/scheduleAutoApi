@@ -3,6 +3,7 @@
 namespace App\Listener;
 
 use App\Event\AlgenJadwalProcess;
+use App\Event\StoreResultJadwal;
 use App\Helpers\Host;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -67,13 +68,11 @@ class AlgenJadwalListener implements ShouldQueue
         // Get Result
         while (true) {
             $form_params = [
-                'celery_id' => $celery_id
+                // 'celery_id' => $celery_id
+                'celery_id' => 'celery-task-meta-59c51d5d-9f23-4d00-b9b8-4dfdc669c645'
             ];
             $url = $host->host('python_engine') . 'jadwal/result';
             $res = $client->requestAsync('GET', $url, ['json' => $form_params] + $event->headers);
-            $res->then(null, function ($response) {
-                dd($response);
-            });
             $res = $res->wait();
 
             if ($res->getStatusCode() != 200) {
@@ -120,7 +119,7 @@ class AlgenJadwalListener implements ShouldQueue
                 echo "Failure";
                 return false;
             }
-            echo "\n".$res->status;
+            echo "\n" . $res->status;
             // retry delay
             sleep(10);
         }
@@ -129,7 +128,7 @@ class AlgenJadwalListener implements ShouldQueue
         $event->process->status = 1;
         $event->process->save();
         echo ("Mulai insert jadwal");
-        dd($jadwal_result);
-        // event(new StoreResultKelompokDosen($event->process, $kelompok_dosen_result));
+        // dd($jadwal_result);
+        event(new StoreResultJadwal($event->process, $jadwal_result));
     }
 }
