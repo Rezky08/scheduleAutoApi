@@ -43,7 +43,7 @@ class StoreResultJadwalListener implements ShouldQueue
         if ($response->getStatusCode() != 200) {
             return $response;
         }
-
+    
         $jadwal_controller = new JadwalController();
         $kelompok_dosen = new KelompokDosen();
         $kelompok_dosen = $kelompok_dosen::find($event->process->item_key);
@@ -55,6 +55,7 @@ class StoreResultJadwalListener implements ShouldQueue
             'created_at' => new \DateTime
         ];
         $jadwal_id = Jadwal::insertGetId($insertToDB);
+
 
         $insertToDB = [
             'process_log_id' => $event->process->id,
