@@ -70,10 +70,9 @@ class StoreResultJadwalListener implements ShouldQueue
         if ($response->getStatusCode() != 200) {
             return $response;
         }
-
+        
         foreach ($event->JadwalResult->data as $data_key => $data_item) {
-            $key_accepted = ['kode_matkul', 'kelompok', 'kode_dosen', 'ruang', 'hari', 'sesi'];
-            $data_item = collect($data_item)->only($key_accepted)->toArray();
+            $data_item = collect($data_item)->toArray();
             $data_item['jadwal_id'] = $jadwal_id;
             $request = new Request();
             $request->setMethod("POST");
