@@ -71,7 +71,7 @@ class StoreResultJadwalListener implements ShouldQueue
         }
 
         foreach ($event->JadwalResult->data as $data_key => $data_item) {
-            $key_accepted = ['kode_matkul','kelompok','kode_dosen','ruang','hari','sesi'];
+            $key_accepted = ['kode_matkul', 'kelompok', 'kode_dosen', 'ruang', 'hari', 'sesi'];
             $data_item = collect($data_item)->only($key_accepted)->toArray();
             $data_item['jadwal_id'] = $jadwal_id;
             $request = new Request();
