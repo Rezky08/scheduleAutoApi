@@ -51,15 +51,11 @@ class StoreResultJadwalListener implements ShouldQueue
         $peminat = $kelompok_dosen->peminat;
         // store algen result prop
         $insertToDB = [
-            'tahun_ajar' => $peminat->tahun_ajaran,
+            'tahun_ajaran' => $peminat->tahun_ajaran,
             'semester' => $peminat->semester,
             'created_at' => new \DateTime
         ];
-        try {
-            $jadwal_id = Jadwal::insertGetId($insertToDB);
-        } catch (Exception $e) {
-            dd($e->getMessage());
-        }
+        $jadwal_id = Jadwal::insertGetId($insertToDB);
 
         $insertToDB = [
             'process_log_id' => $event->process->id,
@@ -75,8 +71,9 @@ class StoreResultJadwalListener implements ShouldQueue
         }
 
         foreach ($event->JadwalResult->data as $data_key => $data_item) {
-            $data_item = collect($data_item)->toArray();
-            $data_item['kelompok_dosen_id'] = $jadwal_id;
+            $key_accepted = ['kode_matkul','kelompok','kode_dosen','ruang','hari','sesi'];
+            $data_item = collect($data_item)->only($key_accepted)->toArray();
+            $data_item['jadwal_id'] = $jadwal_id;
             $request = new Request();
             $request->setMethod("POST");
             $request->request->add($data_item);
