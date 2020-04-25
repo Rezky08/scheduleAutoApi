@@ -37,17 +37,17 @@ class AlgenJadwalListener implements ShouldQueue
         $host = new Host();
         $url = $host->host('python_engine') . 'jadwal';
         // get celery_id
-        // $res = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
-        // $res = $res->wait();
-        // if ($res->getStatusCode() != 200) {
-        //     $event->process->attempt += 1;
-        //     $event->process->save();
-        //     echo "Gagal Send Process Jadwal";
-        //     return false;
-        // }
-        // $res = $res->getBody()->getContents();
-        // $res = json_decode($res);
-        // $celery_id = $res->celery_id;
+        $res = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
+        $res = $res->wait();
+        if ($res->getStatusCode() != 200) {
+            $event->process->attempt += 1;
+            $event->process->save();
+            echo "Gagal Send Process Jadwal";
+            return false;
+        }
+        $res = $res->getBody()->getContents();
+        $res = json_decode($res);
+        $celery_id = $res->celery_id;
 
 
         // add log detail
@@ -64,18 +64,14 @@ class AlgenJadwalListener implements ShouldQueue
             echo "Failed Write Log Detail";
             return $response;
         }
-
         // Get Result
         while (true) {
             $form_params = [
-                // 'celery_id' => $celery_id
-                'celery_id' => '1d266752-31ca-4bc1-b34e-97f336c59c97'
+                'celery_id' => $celery_id
             ];
-
             $url = $host->host('python_engine') . 'result';
             $res = $client->requestAsync('GET', $url, ['json' => $form_params] + $event->headers);
             $res = $res->wait();
-
 
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
