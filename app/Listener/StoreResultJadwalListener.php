@@ -6,6 +6,7 @@ use App\Event\StoreResultJadwal;
 use App\Http\Controllers\API\JadwalController;
 use App\Jadwal;
 use App\KelompokDosen;
+use Exception;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
@@ -43,7 +44,7 @@ class StoreResultJadwalListener implements ShouldQueue
         if ($response->getStatusCode() != 200) {
             return $response;
         }
-    
+
         $jadwal_controller = new JadwalController();
         $kelompok_dosen = new KelompokDosen();
         $kelompok_dosen = $kelompok_dosen::find($event->process->item_key);
@@ -54,8 +55,11 @@ class StoreResultJadwalListener implements ShouldQueue
             'semester' => $peminat->semester,
             'created_at' => new \DateTime
         ];
-        $jadwal_id = Jadwal::insertGetId($insertToDB);
-
+        try {
+            $jadwal_id = Jadwal::insertGetId($insertToDB);
+        } catch (Exception $e) {
+            dd($e->getMessage());
+        }
 
         $insertToDB = [
             'process_log_id' => $event->process->id,

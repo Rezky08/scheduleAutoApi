@@ -71,11 +71,11 @@ class AlgenJadwalListener implements ShouldQueue
                 // 'celery_id' => $celery_id
                 'celery_id' => '1d266752-31ca-4bc1-b34e-97f336c59c97'
             ];
-            
+
             $url = $host->host('python_engine') . 'result';
             $res = $client->requestAsync('GET', $url, ['json' => $form_params] + $event->headers);
             $res = $res->wait();
-            
+
 
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
