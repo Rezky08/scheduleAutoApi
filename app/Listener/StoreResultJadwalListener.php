@@ -70,7 +70,7 @@ class StoreResultJadwalListener implements ShouldQueue
         if ($response->getStatusCode() != 200) {
             return $response;
         }
-        
+
         foreach ($event->JadwalResult->data as $data_key => $data_item) {
             $data_item = collect($data_item)->toArray();
             $data_item['jadwal_id'] = $jadwal_id;
@@ -79,7 +79,6 @@ class StoreResultJadwalListener implements ShouldQueue
             $request->request->add($data_item);
             $response = $jadwal_detail_controller->store($request);
             if ($response->getStatusCode() != 200) {
-                dd($response);
                 return $response;
             }
         }
