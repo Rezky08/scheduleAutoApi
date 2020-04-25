@@ -5,6 +5,7 @@ namespace App\Listener;
 use App\Event\AlgenJadwalProcess;
 use App\Event\StoreResultJadwal;
 use App\Helpers\Host;
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
@@ -70,8 +71,12 @@ class AlgenJadwalListener implements ShouldQueue
                 'celery_id' => $celery_id
             ];
             $url = $host->host('python_engine') . 'result';
-            $res = $client->requestAsync('GET', $url, ['json' => $form_params] + $event->headers);
-            $res = $res->wait();
+            try {
+                $res = $client->requestAsync('GET', $url, ['json' => $form_params] + $event->headers);
+                $res = $res->wait();
+            } catch (Exception $e) {
+                dd($e->getMessage());
+            }
 
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
