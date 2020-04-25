@@ -4,6 +4,7 @@ namespace App\Listener;
 
 use App\Event\StoreResultJadwal;
 use App\Http\Controllers\API\JadwalController;
+use App\Http\Controllers\API\JadwalDetailController;
 use App\Jadwal;
 use App\KelompokDosen;
 use Exception;
@@ -45,7 +46,7 @@ class StoreResultJadwalListener implements ShouldQueue
             return $response;
         }
 
-        $jadwal_controller = new JadwalController();
+        $jadwal_detail_controller = new JadwalDetailController();
         $kelompok_dosen = new KelompokDosen();
         $kelompok_dosen = $kelompok_dosen::find($event->process->item_key);
         $peminat = $kelompok_dosen->peminat;
@@ -77,7 +78,7 @@ class StoreResultJadwalListener implements ShouldQueue
             $request = new Request();
             $request->setMethod("POST");
             $request->request->add($data_item);
-            $response = $jadwal_controller->store($request);
+            $response = $jadwal_detail_controller->store($request);
             if ($response->getStatusCode() != 200) {
                 return $response;
             }
