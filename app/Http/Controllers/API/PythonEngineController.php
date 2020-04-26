@@ -80,9 +80,10 @@ class PythonEngineController extends Controller
             $mata_kuliah = $item->mata_kuliah->toArray();
             $mata_kuliah = collect($mata_kuliah)->except(['id'])->toArray();
             $dosen = $item->dosen->toArray();
-            dd($dosen);
-            $item = collect($item)->except(['id', 'kelompok_dosen_id', 'mata_kuliah'])->toArray();
+            $dosen = collect($dosen)->except(['id'])->toArray();
+            $item = collect($item)->except(['id', 'kelompok_dosen_id', 'mata_kuliah','dosen'])->toArray();
             $item += $mata_kuliah;
+            $item += $dosen;
             return $item;
         })->toArray();
         $params = [

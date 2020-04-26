@@ -38,18 +38,18 @@ class AlgenJadwalListener implements ShouldQueue
         $host = new Host();
         $url = $host->host('python_engine') . 'jadwal';
         // get celery_id
-        // $res = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
-        // $res = $res->wait();
-        // if ($res->getStatusCode() != 200) {
-        //     $event->process->attempt += 1;
-        //     $event->process->save();
-        //     echo "Gagal Send Process Jadwal";
-        //     return false;
-        // }
-        // $res = $res->getBody()->getContents();
-        // $res = json_decode($res);
-        // $celery_id = $res->celery_id;
-        $celery_id = '0f42078b-84f7-4bb6-87e3-94a38f51223e';
+        $res = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
+        $res = $res->wait();
+        if ($res->getStatusCode() != 200) {
+            $event->process->attempt += 1;
+            $event->process->save();
+            echo "Gagal Send Process Jadwal";
+            return false;
+        }
+        $res = $res->getBody()->getContents();
+        $res = json_decode($res);
+        $celery_id = $res->celery_id;
+        // $celery_id = '0f42078b-84f7-4bb6-87e3-94a38f51223e';
 
 
         // add log detail
@@ -125,7 +125,6 @@ class AlgenJadwalListener implements ShouldQueue
                 echo "Failure";
                 return false;
             }
-            echo "\n" . $res->status;
             // retry delay
             sleep(10);
         }

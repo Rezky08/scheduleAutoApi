@@ -79,6 +79,7 @@ class StoreResultJadwalListener implements ShouldQueue
             $request->request->add($data_item);
             $response = $jadwal_detail_controller->store($request);
             if ($response->getStatusCode() != 200) {
+                dd($response,$data_item);
                 return $response;
             }
         }
