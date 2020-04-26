@@ -72,8 +72,11 @@ class StoreResultJadwalListener implements ShouldQueue
         }
 
         foreach ($event->JadwalResult->data as $data_key => $data_item) {
+            $sesi = $data_item->sesi;
             $data_item = collect($data_item)->toArray();
             $data_item['jadwal_id'] = $jadwal_id;
+            $data_item += $data_item['sesi'];
+            dd($data_item);
             $request = new Request();
             $request->setMethod("POST");
             $request->request->add($data_item);
