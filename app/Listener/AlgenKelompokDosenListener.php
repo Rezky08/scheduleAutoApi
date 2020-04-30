@@ -108,13 +108,8 @@ class AlgenKelompokDosenListener implements ShouldQueue
                 'celery_id' => $celery_id
             ];
             $url = $host->host('python_engine') . 'dosen/result';
-            try {
-                $res = $client->requestAsync('GET', $url, ['json' => $form_params]  /* + $event->headers */);
-                $res = $res->wait();
-            } catch (Exception $e) {
-                sleep(10);
-                continue;
-            }
+            $res = $client->requestAsync('GET', $url, ['json' => $form_params]  /* + $event->headers */);
+            $res = $res->wait();
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;
                 $event->process->save();
@@ -159,7 +154,9 @@ class AlgenKelompokDosenListener implements ShouldQueue
                     return $response;
                 }
                 echo "\nFailure";
+                return false;
             }
+            sleep(10);
         }
         $event->process->status = 1;
         $event->process->save();
