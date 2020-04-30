@@ -50,7 +50,7 @@ class GetMataKuliahKelompokListener
         $client = new Client();
         $host = new Host();
         $url = $host->host('python_engine') . 'kelompok';
-        $reqAsync = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
+        $reqAsync = $client->requestAsync('POST', $url, ['json' => $form_params]  /* + $event->headers */);
 
         // add log detail
         $insertToDB = [

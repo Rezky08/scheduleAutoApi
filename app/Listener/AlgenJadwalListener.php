@@ -38,7 +38,7 @@ class AlgenJadwalListener implements ShouldQueue
         $host = new Host();
         $url = $host->host('python_engine') . 'jadwal';
         // get celery_id
-        $res = $client->requestAsync('POST', $url, ['json' => $form_params] + $event->headers);
+        $res = $client->requestAsync('POST', $url, ['json' => $form_params] /* + $event->headers */);
         $res = $res->wait();
         if ($res->getStatusCode() != 200) {
             $event->process->attempt += 1;
@@ -79,7 +79,7 @@ class AlgenJadwalListener implements ShouldQueue
                 sleep(10);
                 continue;
             }
-            
+
 
             if ($res->getStatusCode() != 200) {
                 $event->process->attempt += 1;

@@ -7,7 +7,7 @@ class Host
     public function host($host_name)
     {
         $hosts = [
-            'python_engine' => 'http://192.168.1.11/'
+            'python_engine' => 'http://127.0.0.1:5000/'
         ];
         try {
             return $hosts[$host_name];
