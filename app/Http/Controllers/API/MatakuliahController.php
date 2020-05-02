@@ -63,7 +63,7 @@ class MatakuliahController extends Controller
      */
     public function show(Request $request)
     {
-        return $this->template->show($request);
+        return $this->template->search($request);
     }
 
     /**

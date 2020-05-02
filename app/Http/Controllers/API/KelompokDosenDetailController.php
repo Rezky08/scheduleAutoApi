@@ -62,7 +62,10 @@ class KelompokDosenDetailController extends Controller
      */
     public function show(Request $request)
     {
-        return $this->template->show($request);
+        $rules = [
+            'kelompok_dosen_id' => ['required', 'exists:kelompok_dosen,id,deleted_at,NULL']
+        ];
+        return $this->template->search($request, $rules);
     }
 
     /**

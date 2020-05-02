@@ -38,4 +38,15 @@ class Matakuliah extends Model
     {
         return $this->belongsTo(ProgramStudi::class, 'kode_prodi', 'kode_prodi');
     }
+    public function getTableColumns()
+    {
+        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
+        $columns = collect($columns)->except($this->hidden);
+        $columns = $columns->filter(function ($item, $key) {
+            if (!in_array($item, $this->hidden)) {
+                return $item;
+            }
+        })->toArray();
+        return $columns;
+    }
 }

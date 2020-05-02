@@ -85,7 +85,7 @@ class TemplateController extends Controller
             return $this->show($request);
         }
 
-        if ($request->limit) {
+        if ($request->has('limit')) {
             $limit = $request->limit;
         } else {
             $limit = 25;
@@ -104,7 +104,6 @@ class TemplateController extends Controller
             if ($request->offset) {
                 $modelData = $modelData->offset($request->offset);
             }
-
             $modelData = $modelData->get();
             $response = [
                 'status' => 200,
@@ -187,7 +186,7 @@ class TemplateController extends Controller
         })->values()->toArray();
         $table_column = $form_request->keys()->toArray();
         // set limit records
-        if ($request->limit) {
+        if ($request->has('limit')) {
             $limit = $request->limit;
         } else {
             $limit = 25;
@@ -210,6 +209,7 @@ class TemplateController extends Controller
             if ($limit != 0) {
                 $modelData = $modelData->where($whereLikeCond)->where($whereCond)->limit($limit);
             } elseif ($limit == 0) {
+
                 $modelData = $modelData->where($whereLikeCond)->where($whereCond);
             } else {
                 $modelData = $modelData->where($whereLikeCond)->where($whereCond)->limit(25);
@@ -219,11 +219,85 @@ class TemplateController extends Controller
                 $modelData = $modelData->offset($request->offset);
             }
 
-            if ($request->id) {
+            if ($request->has('id')) {
                 $modelData = $modelData->first();
             } else {
                 $modelData = $modelData->get();
             }
+
+            $response = [
+                'status' => 200,
+                'data' => $modelData
+            ];
+            return response()->json($response, $response['status']);
+        } catch (Exception $e) {
+            $response = [
+                'status' => 500,
+                'message' => $this->responseMessage['error']
+            ];
+            if (env('APP_DEBUG') == true) {
+                $response['message'] = $e->getMessage();
+            }
+            return response()->json($response, $response['status']);
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function search(Request $request, $rules = [], $responseMessage = [])
+    {
+        $this->setResponseMessage($responseMessage);
+        $table_columns = $this->model->getTableColumns();
+        $table_columns = collect($table_columns);
+
+        // set limit records
+        if ($request->has('limit')) {
+            $limit = $request->limit;
+        } else {
+            $limit = 25;
+        }
+
+        $rules += [
+            'q' => ['required', 'filled']
+        ];
+
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            $response = [
+                'status' => 400,
+                'message' => $validator->errors()
+            ];
+            return response()->json($response, $response['status']);
+        }
+        $whereLikeCond = $table_columns->map(function ($item, $key) use ($request) {
+            return [$item, 'LIKE', "%" . $request->q . "%"];
+        })->values();
+
+        try {
+            $modelData = $this->model;
+            // whereLike
+            $whereLikeCond->map(function ($item, $key) use (&$modelData) {
+                $modelData = $modelData->orWhere(array_shift($item), array_shift($item), array_shift($item));
+            });
+
+            // Limit
+            if ($limit != 0) {
+                $modelData = $modelData->limit($limit);
+            } elseif ($limit == 0) {
+                $modelData = $modelData;
+            } else {
+                $modelData = $modelData->limit(25);
+            }
+
+            // Offset
+            if ($request->offset) {
+                $modelData = $modelData->offset($request->offset);
+            }
+            $modelData = $modelData->get();
 
             $response = [
                 'status' => 200,
