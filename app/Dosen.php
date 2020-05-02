@@ -4,10 +4,13 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
 
 class Dosen extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
+    use Notifiable;
     protected $table = 'dosen';
     protected $dates = ['created_at', 'updated_at'];
     protected $hidden = ['created_at', 'updated_at', 'deleted_at'];
@@ -29,17 +32,5 @@ class Dosen extends Model
     public function kelompok_dosen()
     {
         return $this->hasMany(KelompokDosenDetail::class, 'kode_dosen', 'kode_dosen');
-    }
-
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }

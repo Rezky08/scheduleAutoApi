@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KelompokDosenDetail extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
     protected $table = 'kelompok_dosen_detail';
     protected $dates = ['deleted_at'];
@@ -23,16 +24,5 @@ class KelompokDosenDetail extends Model
     public function dosen()
     {
         return $this->belongsTo(Dosen::class, 'kode_dosen', 'kode_dosen');
-    }
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }

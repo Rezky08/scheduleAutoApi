@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class DosenMatakuliah extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
     protected $table = 'dosen_mata_kuliah';
     protected $dates = ['created_at', 'updated_at'];
@@ -19,16 +20,5 @@ class DosenMatakuliah extends Model
     public function matkul()
     {
         return $this->belongsTo(Matakuliah::class, 'kode_matkul', 'kode_matkul');
-    }
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Matakuliah extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
     protected $table = 'mata_kuliah';
     protected $dates = ['deleted_at'];
@@ -37,16 +38,5 @@ class Matakuliah extends Model
     public function program_studi()
     {
         return $this->belongsTo(ProgramStudi::class, 'kode_prodi', 'kode_prodi');
-    }
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }

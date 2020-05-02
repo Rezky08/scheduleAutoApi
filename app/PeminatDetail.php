@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PeminatDetail extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
     protected $table = 'peminat_detail';
     protected $dates = ['deleted_at'];
@@ -23,16 +24,5 @@ class PeminatDetail extends Model
     public function peminat()
     {
         return $this->belongsTo(Peminat::class, 'peminat_id', 'id');
-    }
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }

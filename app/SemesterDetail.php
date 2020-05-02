@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SemesterDetail extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
     protected $table = 'semester_detail';
     protected $dates = ['deleted_at'];
@@ -23,16 +24,5 @@ class SemesterDetail extends Model
     public function semester()
     {
         return $this->hasMany(Peminat::class, 'semester', 'semester');
-    }
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }

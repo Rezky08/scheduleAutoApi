@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Jadwal extends Model
 {
+    use ModelExtra;
     use SoftDeletes;
     protected $table = 'jadwal';
     protected $dates = ['created_at', 'updated_at'];
@@ -27,16 +28,5 @@ class Jadwal extends Model
     public function semester_detail()
     {
         return $this->belongsTo(SemesterDetail::class, 'semester', 'semester');
-    }
-    public function getTableColumns()
-    {
-        $columns = $this->getConnection()->getSchemaBuilder()->getColumnListing($this->getTable());
-        $columns = collect($columns)->except($this->hidden);
-        $columns = $columns->filter(function ($item, $key) {
-            if (!in_array($item, $this->hidden)) {
-                return $item;
-            }
-        })->toArray();
-        return $columns;
     }
 }
