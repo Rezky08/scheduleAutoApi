@@ -25,9 +25,6 @@ class DosenMatkulController extends Controller
      */
     public function index(Request $request)
     {
-        if (count($request->all()) > 0) {
-            return $this->show($request);
-        }
         return $this->template->index($request);
     }
 

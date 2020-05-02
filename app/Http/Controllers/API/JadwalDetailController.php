@@ -26,10 +26,10 @@ class JadwalDetailController extends Controller
      */
     public function index(Request $request)
     {
-        if (count($request->all()) > 0) {
-            return $this->show($request);
-        }
-        return $this->template->index($request);
+        $rules = [
+            'jadwal_id' => ['required', 'exists:jadwal,id,deleted_at,NULL']
+        ];
+        return $this->template->index($request, $rules);
     }
 
     /**

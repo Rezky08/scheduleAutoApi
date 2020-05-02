@@ -24,10 +24,6 @@ class KelompokDosenDetailController extends Controller
      */
     public function index(Request $request)
     {
-        $request_count = collect($request->all())->except('kelompok_dosen_id');
-        if (count($request_count->toArray()) > 0) {
-            return $this->show($request);
-        }
         $rules = [
             'kelompok_dosen_id' => ['required', 'exists:kelompok_dosen,id,deleted_at,NULL']
         ];

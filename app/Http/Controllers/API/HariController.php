@@ -27,9 +27,6 @@ class HariController extends Controller
     public function index(Request $request)
     {
         // check apakah ada request
-        if (count($request->all()) > 0) {
-            return $this->show($request);
-        }
         return $this->template->index($request);
     }
 

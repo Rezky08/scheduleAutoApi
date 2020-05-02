@@ -80,12 +80,32 @@ class TemplateController extends Controller
         }
 
         // check apakah ada request
-        if (count($request->all()) > 0) {
+        $form_request = collect($request->all())->except(['limit', 'offset']);
+        if (count($form_request->toArray()) > 0) {
             return $this->show($request);
         }
 
+        if ($request->limit) {
+            $limit = $request->limit;
+        } else {
+            $limit = 25;
+        }
+
         try {
-            $modelData = $this->model->all();
+            $modelData = $this->model;
+            if ($limit != 0) {
+                $modelData = $modelData->limit($limit);
+            } elseif ($limit == 0) {
+                $modelData = $modelData;
+            } else {
+                $modelData = $modelData->limit(25);
+            }
+
+            if ($request->offset) {
+                $modelData = $modelData->offset($request->offset);
+            }
+
+            $modelData = $modelData->get();
             $response = [
                 'status' => 200,
                 'data' => $modelData->toArray()
@@ -159,9 +179,22 @@ class TemplateController extends Controller
     {
         $this->setResponseMessage($responseMessage);
 
-        $table_column = collect($request->all())->keys()->toArray();
+        $form_request = collect($request->all())->except(['limit', 'offset']);
+        $whereCond = $form_request->only('id')->toArray();
+        $whereLikeCond = $form_request->except('id');
+        $whereLikeCond = $whereLikeCond->map(function ($item, $key) {
+            return [$key, 'LIKE', "%" . $item . "%"];
+        })->values()->toArray();
+        $table_column = $form_request->keys()->toArray();
+        // set limit records
+        if ($request->limit) {
+            $limit = $request->limit;
+        } else {
+            $limit = 25;
+        }
+
         $rules = [
-            'column' => ['required', new table_column($this->table_name)]
+            'column' => ['filled', new table_column($this->table_name)]
         ];
         $validator = Validator::make($request->all() + ['column' => $table_column], $rules);
         if ($validator->fails()) {
@@ -172,13 +205,26 @@ class TemplateController extends Controller
             return response()->json($response, $response['status']);
         }
 
-        $whereCond = collect($request->all());
-        $whereCond = $whereCond->map(function ($item) {
-            return $item;
-        });
-
         try {
-            $modelData = $this->model->where($request->all())->get();
+            $modelData = $this->model;
+            if ($limit != 0) {
+                $modelData = $modelData->where($whereLikeCond)->where($whereCond)->limit($limit);
+            } elseif ($limit == 0) {
+                $modelData = $modelData->where($whereLikeCond)->where($whereCond);
+            } else {
+                $modelData = $modelData->where($whereLikeCond)->where($whereCond)->limit(25);
+            }
+
+            if ($request->offset) {
+                $modelData = $modelData->offset($request->offset);
+            }
+
+            if ($request->id) {
+                $modelData = $modelData->first();
+            } else {
+                $modelData = $modelData->get();
+            }
+
             $response = [
                 'status' => 200,
                 'data' => $modelData
